@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>寻尤管理后台</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0a0a1a;color:#e0e0e0;font-family:-apple-system,BlinkMacSystemFont,sans-serif;max-width:480px;margin:0 auto}
+.header{background:linear-gradient(135deg,#ff6b9d,#c44dff);padding:16px 20px;display:flex;justify-content:space-between;align-items:center}
+.header h1{color:#fff;font-size:18px;font-weight:700}
+.header .logout{color:#fff;font-size:13px;background:rgba(255,255,255,0.2);border:none;padding:6px 14px;border-radius:20px;cursor:pointer}
+.tabs{display:flex;background:#12122a;overflow-x:auto;border-bottom:1px solid #2a2a4a}
+.tabs::-webkit-scrollbar{display:none}
+.tab{flex-shrink:0;padding:12px 16px;font-size:13px;color:#888;cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap}
+.tab.active{color:#ff6b9d;border-bottom-color:#ff6b9d}
+.content{padding:16px}
+.tab-pane{display:none}
+.tab-pane.active{display:block}
+.sub-tabs{display:flex;gap:8px;margin-bottom:14px}
+.sub-tab{padding:6px 14px;border-radius:20px;font-size:12px;background:#16162e;color:#888;cursor:pointer;border:1px solid #2a2a4a}
+.sub-tab.active{background:linear-gradient(135deg,#ff6b9d,#c44dff);color:#fff;border:none}
+.sub-pane{display:none}
+.sub-pane.active{display:block}
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px}
+.stat-card{background:#16162e;border-radius:12px;padding:16px}
+.stat-card .label{font-size:12px;color:#888;margin-bottom:6px}
+.stat-card .value{font-size:24px;font-weight:700;color:#fff}
+.stat-card .value.pink{color:#ff6b9d}
+.section-title{font-size:15px;font-weight:600;margin:20px 0 12px;color:#ccc}
+.item{background:#16162e;border-radius:10px;padding:12px;margin-bottom:10px;display:flex;align-items:center;gap:10px}
+.item img{width:40px;height:40px;border-radius:50%;object-fit:cover}
+.item-info{flex:1;min-width:0}
+.item-info .name{font-size:14px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.item-info .sub{font-size:11px;color:#888;margin-top:2px}
+.btn{display:inline-block;padding:6px 12px;border-radius:8px;font-size:12px;border:none;cursor:pointer}
+.btn-pink{background:linear-gradient(135deg,#ff6b9d,#c44dff);color:#fff}
+.btn-danger{background:#ff4757;color:#fff}
+.btn-success{background:#2ed573;color:#000}
+.btn-sm{padding:4px 10px;font-size:11px}
+.btn-off{background:#555;color:#aaa}
+.badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600}
+.badge-vip{background:linear-gradient(135deg,#ffc107,#ff9800);color:#000}
+.badge-banned{background:#ff4757;color:#fff}
+.badge-online{background:#2ed573;color:#000}
+.badge-offline{background:#555;color:#aaa}
+.badge-success{background:#2ed573;color:#000}
+.badge-fail{background:#ff4757;color:#fff}
+.badge-pending{background:#ffc107;color:#000}
+.badge-approved{background:#2ed573;color:#000}
+.form-group{margin-bottom:14px}
+.form-group label{display:block;font-size:13px;color:#aaa;margin-bottom:6px}
+.form-group input,.form-group select,.form-group textarea{width:100%;background:#16162e;border:1px solid #2a2a4a;color:#e0e0e0;padding:10px 12px;border-radius:8px;font-size:14px}
+.form-group textarea{height:60px;resize:none}
+.form-group input[type=file]{padding:8px}
+.search-bar{display:flex;gap:8px;margin-bottom:14px}
+.search-bar input{flex:1;background:#16162e;border:1px solid #2a2a4a;color:#e0e0e0;padding:10px 12px;border-radius:8px;font-size:13px}
+.search-bar button{background:linear-gradient(135deg,#ff6b9d,#c44dff);color:#fff;border:none;padding:10px 16px;border-radius:8px;font-size:13px;cursor:pointer}
+.pagination{display:flex;justify-content:center;gap:8px;margin-top:14px}
+.pagination button{background:#16162e;color:#888;border:1px solid #2a2a4a;padding:8px 14px;border-radius:6px;font-size:12px;cursor:pointer}
+.pagination button.active{background:linear-gradient(135deg,#ff6b9d,#c44dff);color:#fff;border:none}
+.empty{text-align:center;padding:40px 20px;color:#666;font-size:14px}
+.trend-chart{background:#16162e;border-radius:12px;padding:16px;margin-bottom:20px}
+.trend-bar{display:flex;align-items:flex-end;gap:6px;height:120px;margin-top:10px}
+.trend-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px}
+.trend-col .bar{width:100%;background:linear-gradient(to top,#ff6b9d,#c44dff);border-radius:4px 4px 0 0;min-height:4px}
+.trend-col .lbl{font-size:10px;color:#888}
+.actions{display:flex;gap:6px;flex-shrink:0;flex-wrap:wrap}
+.total-bar{background:#16162e;border-radius:10px;padding:14px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center}
+.total-bar .amount{font-size:22px;font-weight:700;color:#ffc107}
+.total-bar .cnt{font-size:13px;color:#888}
+.verify-card{background:#16162e;border-radius:10px;padding:14px;margin-bottom:10px}
+.verify-card .vc-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.verify-card .vc-name{font-size:15px;font-weight:600}
+.verify-card .vc-meta{font-size:12px;color:#888;margin-bottom:8px}
+.verify-card .vc-photos{display:flex;gap:8px;margin-bottom:10px}
+.verify-card .vc-photos img{width:45%;border-radius:8px;border:1px solid #2a2a4a}
+.verify-card .vc-actions{display:flex;gap:8px}
+.dl-item{background:#16162e;border-radius:10px;padding:12px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center}
+.dl-item .dl-left{flex:1}
+.dl-item .dl-name{font-size:14px;font-weight:500}
+.dl-item .dl-meta{font-size:11px;color:#888;margin-top:2px}
+.dl-item .dl-device{font-size:11px;color:#ff6b9d}
+
+/* 编辑用户弹窗 */
+.edit-modal{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.8);z-index:3000;display:none}
+.edit-modal.active{display:flex;align-items:center;justify-content:center}
+.edit-modal-content{background:#16162e;border-radius:16px;width:90%;max-width:400px;max-height:90vh;overflow-y:auto;padding:20px}
+.edit-modal h3{font-size:17px;margin-bottom:16px;color:#fff}
+.edit-modal .form-group input,.edit-modal .form-group select{background:#0a0a1a;border:1px solid #2a2a4a}
+.edit-modal .btn-row{display:flex;gap:10px;margin-top:16px}
+.edit-modal .btn-row .btn{flex:1;padding:12px;border-radius:10px;border:none;font-size:14px;cursor:pointer}
+.edit-modal .btn-cancel{background:#2a2a4a;color:#888}
+.edit-modal .btn-save{background:linear-gradient(135deg,#ff6b9d,#c44dff);color:#fff}
+
+/* 照片墙样式 */
+.photo-wall{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px}
+.photo-wall-item{position:relative;width:60px;height:60px;border-radius:8px;overflow:hidden;border:1px solid #2a2a4a}
+.photo-wall-item img{width:100%;height:100%;object-fit:cover}
+.photo-wall-item .del-btn{position:absolute;top:2px;right:2px;width:18px;height:18px;background:rgba(255,71,87,0.9);color:#fff;border:none;border-radius:50%;font-size:12px;line-height:18px;text-align:center;cursor:pointer}
+.photo-add-btn{width:60px;height:60px;border-radius:8px;border:1px dashed #2a2a4a;background:#0a0a1a;color:#888;font-size:24px;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.photo-add-btn:hover{background:#16162e;color:#ff6b9d;border-color:#ff6b9d}
+.photo-url-modal{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.8);z-index:4000;display:none;align-items:center;justify-content:center}
+.photo-url-modal.active{display:flex}
+.photo-url-modal-content{background:#16162e;border-radius:12px;padding:20px;width:90%;max-width:350px}
+.photo-url-modal h4{color:#fff;margin-bottom:12px;font-size:15px}
+.photo-url-modal input{width:100%;background:#0a0a1a;border:1px solid #2a2a4a;color:#e0e0e0;padding:10px 12px;border-radius:8px;font-size:14px;margin-bottom:12px}
+.photo-url-modal .btn-row{display:flex;gap:10px}
+.photo-url-modal .btn-row button{flex:1;padding:10px;border-radius:8px;border:none;font-size:13px;cursor:pointer}
+.photo-url-modal .btn-cancel{background:#2a2a4a;color:#888}
+.photo-url-modal .btn-confirm{background:linear-gradient(135deg,#ff6b9d,#c44dff);color:#fff}
+</style>
+</head>
+<body>
+<div class="header">
+<h1>寻尤后台</h1>
+<button class="logout" onclick="location.href='/admin/logout'">退出</button>
+</div>
+<div class="tabs">
+<div class="tab active" data-tab="overview">概览</div>
+<div class="tab" data-tab="users">用户</div>
+<div class="tab" data-tab="payments">充值</div>
+<div class="tab" data-tab="posts">动态</div>
+<div class="tab" data-tab="generate">数据生成</div>
+</div>
+<div class="content">
+
+<!-- 概览 -->
+<div class="tab-pane active" id="pane-overview">
+<div class="stats-grid">
+<div class="stat-card"><div class="label">总用户</div><div class="value pink" id="st-total">-</div></div>
+<div class="stat-card"><div class="label">今日注册</div><div class="value" id="st-today">-</div></div>
+<div class="stat-card"><div class="label">总动态</div><div class="value" id="st-posts">-</div></div>
+<div class="stat-card"><div class="label">总充值</div><div class="value pink" id="st-revenue">-</div></div>
+</div>
+<div class="section-title">7天注册趋势</div>
+<div class="trend-chart"><div class="trend-bar" id="trend-bar"></div></div>
+<div class="sub-tabs">
+<div class="sub-tab active" data-sub="dl" onclick="switchSub(this,'overview')">下载详情</div>
+<div class="sub-tab" data-sub="verify" onclick="switchSub(this,'overview')">实名审核</div>
+</div>
+<div class="sub-pane active" id="overview-dl">
+<div class="total-bar"><div><div class="cnt">总下载量</div><div class="value pink" id="dl-count" style="font-size:24px">-</div></div></div>
+<div id="dl-list"></div>
+</div>
+<div class="sub-pane" id="overview-verify">
+<div id="verify-list"></div>
+</div>
+</div>
+
+<!-- 用户 -->
+<div class="tab-pane" id="pane-users">
+<div class="sub-tabs">
+<div class="sub-tab active" data-sub="real" onclick="switchSub(this,'users')">真实用户</div>
+<div class="sub-tab" data-sub="fake" onclick="switchSub(this,'users')">假人管理</div>
+</div>
+<div class="sub-pane active" id="users-real">
+<div class="search-bar">
+<input id="user-search" placeholder="搜索昵称/手机号">
+<button onclick="loadUsers()">搜索</button>
+</div>
+<div id="user-list"></div>
+<div class="pagination" id="user-pager"></div>
+</div>
+<div class="sub-pane" id="users-fake">
+<div class="section-title">创建假人</div>
+<form id="fake-form" onsubmit="createFake(event)">
+<div class="form-group"><label>头像</label><input type="file" name="avatar" accept="image/*"></div>
+<div class="form-group"><label>昵称</label><input name="nickname" required></div>
+<div class="form-group"><label>性别</label><select name="gender"><option value="female">女</option><option value="male">男</option></select></div>
+<div class="form-group"><label>年龄</label><input name="age" type="number" value="22" min="18" max="50"></div>
+<div class="form-group"><label>城市</label><input name="city"></div>
+<div class="form-group"><label>简介</label><textarea name="bio"></textarea></div>
+<div class="form-group"><label>照片墙（可多选）</label><input type="file" name="photos" accept="image/*" multiple></div>
+<button type="submit" class="btn btn-pink" style="width:100%;padding:12px;font-size:15px">创建假人</button>
+</form>
+<div class="section-title" style="margin-top:24px;display:flex;justify-content:space-between;align-items:center">
+<span>假人列表</span>
+<div>
+<button class="btn btn-sm btn-pink" onclick="toggleOnline(true)">全部上线</button>
+<button class="btn btn-sm btn-off" onclick="toggleOnline(false)">全部下线</button>
+</div>
+</div>
+<div id="fake-list"></div>
+</div>
+</div>
+
+<!-- 充值 -->
+<div class="tab-pane" id="pane-payments">
+<div class="total-bar">
+<div><div class="cnt">总充值金额</div><div class="amount" id="pay-total">-</div></div>
+<div><div class="cnt">总笔数</div><div class="value pink" id="pay-count" style="font-size:20px">-</div></div>
+</div>
+<div id="pay-list"></div>
+</div>
+
+<!-- 动态 -->
+<div class="tab-pane" id="pane-posts">
+<div id="post-list"></div>
+<div class="pagination" id="post-pager"></div>
+</div>
+
+</div>
+
+<script>
+var userPage=1,postPage=1;
+var API='/admin/api';
+
+document.querySelectorAll('.tab').forEach(function(t){
+t.onclick=function(){
+document.querySelectorAll('.tab').forEach(function(x){x.classList.remove('active')});
+document.querySelectorAll('.tab-pane').forEach(function(x){x.classList.remove('active')});
+t.classList.add('active');
+document.getElementById('pane-'+t.dataset.tab).classList.add('active');
+var m={overview:loadOverview,users:loadUsers,payments:loadPayments,posts:loadPosts};
+if(m[t.dataset.tab])m[t.dataset.tab]();
+};
+});
+
+function switchSub(el,parent){
+var sub=el.dataset.sub;
+el.parentElement.querySelectorAll('.sub-tab').forEach(function(x){x.classList.remove('active')});
+el.classList.add('active');
+el.parentElement.querySelectorAll('.sub-tab').forEach(function(x){
+document.getElementById(parent+'-'+x.dataset.sub).classList.remove('active');
+});
+document.getElementById(parent+'-'+sub).classList.add('active');
+if(parent==='overview'&&sub==='dl')loadDownloads();
+if(parent==='overview'&&sub==='verify')loadVerifications();
+if(parent==='users'&&sub==='real')loadUsers();
+if(parent==='users'&&sub==='fake')loadFakes();
+}
+
+function api(u,o){return fetch(API+u,Object.assign({credentials:'same-origin'},o||{})).then(function(r){return r.json()})}
+
+function loadOverview(){
+api('/stats').then(function(d){
+document.getElementById('st-total').textContent=d.total_users;
+document.getElementById('st-today').textContent=d.today_users;
+document.getElementById('st-posts').textContent=d.total_posts;
+document.getElementById('st-revenue').textContent='\u00a5'+d.total_recharge;
+var mx=1;d.trend.forEach(function(t){if(t.count>mx)mx=t.count});
+var h='';d.trend.forEach(function(t){var p=Math.round(t.count/mx*100);h+='<div class="trend-col"><div class="bar" style="height:'+p+'%"></div><div class="lbl">'+t.date+'</div></div>'});
+document.getElementById('trend-bar').innerHTML=h;
+});
+loadDownloads();
+}
+
+function loadDownloads(){
+api('/downloads').then(function(d){
+document.getElementById('dl-count').textContent=d.total;
+var h='';(d.downloads||[]).forEach(function(dl){
+h+='<div class="dl-item"><div class="dl-left"><div class="dl-name">'+dl.nickname+'</div><div class="dl-meta">'+dl.phone+' \xb7 '+dl.region+'</div></div><div><div class="dl-device">'+dl.device+'</div><div class="dl-meta" style="text-align:right">'+dl.created_at+'</div></div></div>';
+});
+document.getElementById('dl-list').innerHTML=h||'<div class="empty">暂无下载记录</div>';
+});
+}
+
+function loadVerifications(){
+api('/verifications').then(function(d){
+var h='';(d.verifications||[]).forEach(function(v){
+h+='<div class="verify-card"><div class="vc-top"><span class="vc-name">'+v.nickname+'</span><span class="badge badge-pending">待审核</span></div>';
+h+='<div class="vc-meta">'+v.phone+' \xb7 '+v.real_name+' \xb7 '+v.id_card_number+'</div>';
+if(v.id_card_front||v.id_card_back){
+h+='<div class="vc-photos">';
+if(v.id_card_front)h+='<img src="'+v.id_card_front+'" alt="正面">';
+if(v.id_card_back)h+='<img src="'+v.id_card_back+'" alt="背面">';
+h+='</div>';
+}
+h+='<div class="vc-actions"><button class="btn btn-sm btn-success" onclick="verifyApprove('+v.id+')">通过</button> <button class="btn btn-sm btn-danger" onclick="verifyReject('+v.id+')">拒绝</button></div></div>';
+});
+document.getElementById('verify-list').innerHTML=h||'<div class="empty">暂无待审核</div>';
+});
+}
+
+function verifyApprove(id){api('/user/'+id+'/verify-approve',{method:'POST'}).then(function(){loadVerifications()})}
+function verifyReject(id){if(confirm('确认拒绝？'))api('/user/'+id+'/verify-reject',{method:'POST'}).then(function(){loadVerifications()})}
+
+function loadUsers(){
+var s=document.getElementById('user-search').value;
+api('/users?page='+userPage+'&per_page=20&search='+encodeURIComponent(s)).then(function(d){
+var h='';d.users.forEach(function(u){
+var bg='';
+if(u.vip_type)bg+='<span class="badge badge-vip">VIP</span> ';
+if(u.is_banned)bg+='<span class="badge badge-banned">封禁</span> ';
+if(u.verify_status==='pending')bg+='<span class="badge badge-pending">待审</span> ';
+if(u.verify_status==='approved')bg+='<span class="badge badge-approved">已审</span> ';
+h+='<div class="item">';
+if(u.avatar)h+='<img src="'+u.avatar+'">';
+h+='<div class="item-info"><div class="name">'+u.nickname+' '+bg+'</div><div class="sub">'+u.phone+' \xb7 '+u.gender+' \xb7 '+u.created_at+'</div></div>';
+h+='<div class="actions">';
+h+='<button class="btn btn-sm btn-pink" onclick="toggleVip('+u.id+')">VIP</button>';
+h+='<button class="btn btn-sm '+(u.is_banned?'btn-pink':'btn-danger')+'" onclick="toggleBan('+u.id+')">'+(u.is_banned?'解封':'封禁')+'</button>';
+h+='<button class="btn btn-sm btn-success" onclick="openEditModal('+u.id+')">编辑</button>';
+h+='<button class="btn btn-sm btn-danger" onclick="delUser('+u.id+')">删</button>';
+h+='</div></div>';
+});
+document.getElementById('user-list').innerHTML=h||'<div class="empty">暂无用户</div>';
+var pg=Math.ceil(d.total/20),ph='';for(var i=1;i<=pg&&i<=10;i++){ph+='<button class="'+(i===userPage?'active':'')+'" onclick="userPage='+i+';loadUsers()">'+i+'</button>'}
+document.getElementById('user-pager').innerHTML=pg>1?ph:'';
+});
+}
+function toggleVip(id){api('/user/'+id+'/toggle-vip',{method:'POST'}).then(function(){loadUsers()})}
+function toggleBan(id){api('/user/'+id+'/toggle-ban',{method:'POST'}).then(function(){loadUsers()})}
+function delUser(id){if(confirm('确认删除？'))api('/user/'+id+'/delete',{method:'POST'}).then(function(){loadUsers()})}
+
+function loadFakes(){
+api('/fake-users').then(function(d){
+var h='';(d.fake_users||[]).forEach(function(u){
+var ol=u.is_online?'<span class="badge badge-online">在线</span>':'<span class="badge badge-offline">离线</span>';
+h+='<div class="item" style="flex-wrap:wrap">';
+if(u.avatar)h+='<img src="'+u.avatar+'">';
+h+='<div class="item-info"><div class="name">'+u.nickname+' '+ol+'</div><div class="sub">'+u.gender+' \xb7 '+u.age+'岁 \xb7 '+(u.city||'')+'</div></div>';
+h+='<div class="actions"><button class="btn btn-sm btn-success" onclick="openEditModal('+u.id+')">编辑</button><button class="btn btn-sm btn-danger" onclick="delFake('+u.id+')">删</button></div>';
+if(u.photos&&u.photos.length>0){
+h+='<div style="width:100%;margin-top:6px;"><div style="font-size:11px;color:#888;margin-bottom:4px;">照片墙 ('+u.photos.length+')</div><div style="display:flex;gap:4px;flex-wrap:wrap;">';
+u.photos.forEach(function(p){h+='<img src="'+p+'" style="width:40px;height:40px;border-radius:6px;object-fit:cover;border:1px solid #2a2a4a;" onerror="this.style.display=\'none\'">';});
+h+='</div></div>';
+}
+h+='</div>';
+});
+document.getElementById('fake-list').innerHTML=h||'<div class="empty">暂无假人</div>';
+});
+}
+function createFake(e){
+e.preventDefault();var fd=new FormData(document.getElementById('fake-form'));
+fetch(API+'/fake-user',{method:'POST',body:fd,credentials:'same-origin'}).then(function(r){return r.json()}).then(function(d){
+if(d.ok){alert('创建成功 ID:'+d.id);document.getElementById('fake-form').reset();loadFakes()}else{alert('失败:'+(d.error||'未知'))}
+}).catch(function(x){alert('错误:'+x)});
+}
+function delFake(id){if(confirm('确认？'))api('/fake-user/'+id+'/delete',{method:'POST'}).then(function(){loadFakes()})}
+function toggleOnline(v){api('/fake-users/toggle-online',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({online:v})}).then(function(){loadFakes()})}
+
+function loadPayments(){
+api('/payments').then(function(d){
+document.getElementById('pay-total').textContent='\u00a5'+d.total_amount;
+document.getElementById('pay-count').textContent=d.total;
+var h='';(d.payments||[]).forEach(function(p){
+var st=p.status==='success'?'<span class="badge badge-success">成功</span>':'<span class="badge badge-fail">'+p.status+'</span>';
+h+='<div class="item"><div class="item-info"><div class="name">'+p.nickname+' \u00a5'+p.amount+'</div><div class="sub">'+p.payment_type+' '+st+' \xb7 '+p.created_at+'</div></div></div>';
+});
+document.getElementById('pay-list').innerHTML=h||'<div class="empty">暂无充值记录</div>';
+});
+}
+
+function loadPosts(){
+api('/posts?page='+postPage+'&per_page=20').then(function(d){
+var h='';d.posts.forEach(function(p){
+h+='<div class="item"><div class="item-info" style="flex:1"><div class="name" style="font-size:13px">'+(p.content||'')+'</div><div class="sub">'+p.author+' \xb7 '+p.created_at+'</div></div>';
+h+='<button class="btn btn-sm btn-danger" onclick="delPost('+p.id+')">删</button></div>';
+});
+document.getElementById('post-list').innerHTML=h||'<div class="empty">暂无</div>';
+var pg=Math.ceil(d.total/20),ph='';for(var i=1;i<=pg&&i<=10;i++){ph+='<button class="'+(i===postPage?'active':'')+'" onclick="postPage='+i+';loadPosts()">'+i+'</button>'}
+document.getElementById('post-pager').innerHTML=pg>1?ph:'';
+});
+}
+function delPost(id){if(confirm('确认？'))api('/post/'+id+'/delete',{method:'POST'}).then(function(){loadPosts()})}
+
+loadOverview();
+</script>
+</body>
+</html>
+
+<!-- 新增 Tab: 举报管理 -->
+<div class="tab" data-tab="reports">举报</div>
+<!-- 新增 Tab: 公告管理 -->
+<div class="tab" data-tab="announcements">公告</div>
+<!-- 新增 Tab: 敏感词管理 -->
+<div class="tab" data-tab="sensitive">敏感词</div>
+
+<!-- 举报管理内容 -->
+<div class="tab-pane" id="pane-reports">
+    <div class="section-title">举报列表</div>
+    <div id="report-list"></div>
+</div>
+
+<!-- 公告管理内容 -->
+<div class="tab-pane" id="pane-announcements">
+    <div class="section-title">发布公告</div>
+    <div class="form-group"><label>标题</label><input id="ann-title" placeholder="公告标题"></div>
+    <div class="form-group"><label>内容</label><textarea id="ann-content" placeholder="公告内容" style="height:100px;"></textarea></div>
+    <label style="display:flex;align-items:center;gap:8px;margin-bottom:14px;font-size:13px;">
+        <input type="checkbox" id="ann-active" checked> 立即启用
+    </label>
+    <button class="btn btn-pink" style="width:100%;padding:12px;" onclick="createAnnouncement()">发布公告</button>
+    <div class="section-title" style="margin-top:24px;">公告列表</div>
+    <div id="ann-list"></div>
+</div>
+
+<!-- 敏感词管理内容 -->
+<div class="tab-pane" id="pane-sensitive">
+    <div class="section-title">添加敏感词</div>
+    <div class="form-group"><label>敏感词</label><input id="sw-word" placeholder="输入敏感词"></div>
+    <div class="form-group">
+        <label>分类</label>
+        <select id="sw-category">
+            <option value="contact">联系方式</option>
+            <option value="adult">涉黄</option>
+            <option value="fraud">诈骗</option>
+            <option value="other">其他</option>
+        </select>
+    </div>
+    <button class="btn btn-pink" style="width:100%;padding:12px;" onclick="addSensitiveWord()">添加</button>
+    <div class="section-title" style="margin-top:24px;">敏感词列表 (<span id="sw-count">0</span>)</div>
+    <div id="sw-list"></div>
+</div>
+
+<!-- 数据生成面板 -->
+<div class="tab-pane" id="pane-generate">
+    <div class="section-title">🔧 生成假数据</div>
+    <p style="color:#888;font-size:13px;margin-bottom:16px;">一键生成测试用的假用户、假动态、假访客，方便测试和演示</p>
+    
+    <div style="background:#16162e;border-radius:12px;padding:16px;margin-bottom:16px;">
+        <div style="font-size:14px;font-weight:600;margin-bottom:12px;color:#ff6b9d;">👩 生成假女用户</div>
+        <div class="form-group">
+            <label>数量</label>
+            <input id="gen-user-count" type="number" value="10" min="1" max="50" placeholder="1-50">
+        </div>
+        <button class="btn btn-pink" style="width:100%;padding:12px;" onclick="generateFakeUsers()">生成假用户</button>
+        <div id="gen-user-result" style="margin-top:8px;font-size:13px;color:#43e97b;"></div>
+    </div>
+    
+    <div style="background:#16162e;border-radius:12px;padding:16px;margin-bottom:16px;">
+        <div style="font-size:14px;font-weight:600;margin-bottom:12px;color:#c44dff;">📝 生成假动态</div>
+        <div class="form-group">
+            <label>数量</label>
+            <input id="gen-post-count" type="number" value="10" min="1" max="50" placeholder="1-50">
+        </div>
+        <button class="btn btn-pink" style="width:100%;padding:12px;background:linear-gradient(135deg,#c44dff,#8b5cf6);" onclick="generateFakePosts()">生成假动态</button>
+        <div id="gen-post-result" style="margin-top:8px;font-size:13px;color:#43e97b;"></div>
+    </div>
+    
+    <div style="background:#16162e;border-radius:12px;padding:16px;margin-bottom:16px;">
+        <div style="font-size:14px;font-weight:600;margin-bottom:12px;color:#4facfe;">👁️ 生成假访客</div>
+        <div class="form-group">
+            <label>数量</label>
+            <input id="gen-visitor-count" type="number" value="20" min="1" max="100" placeholder="1-100">
+        </div>
+        <button class="btn btn-pink" style="width:100%;padding:12px;background:linear-gradient(135deg,#4facfe,#43e97b);" onclick="generateFakeVisitors()">生成假访客</button>
+        <div id="gen-visitor-result" style="margin-top:8px;font-size:13px;color:#43e97b;"></div>
+    </div>
+</div>
+
+<!-- 编辑用户弹窗 -->
+<div class="edit-modal" id="editModal">
+    <div class="edit-modal-content">
+        <h3>编辑用户资料</h3>
+        <input type="hidden" id="edit-user-id">
+        <div class="form-group"><label>头像URL</label><input id="edit-avatar" placeholder="https://..."></div>
+        <div class="form-group"><label>昵称</label><input id="edit-nickname"></div>
+        <div class="form-group"><label>身高(cm)</label><input id="edit-height" type="number" placeholder="165"></div>
+        <div class="form-group"><label>职业</label><input id="edit-occupation" placeholder="学生/教师/销售..."></div>
+        <div class="form-group"><label>爱好</label><input id="edit-interests" placeholder="用逗号分隔，如：旅行,美食,摄影"></div>
+        <div class="form-group"><label>想找什么</label><input id="edit-looking-for" placeholder="想认识有趣的人"></div>
+        <div class="form-group"><label>城市</label><input id="edit-city"></div>
+        <div class="form-group"><label>简介</label><textarea id="edit-bio" placeholder="个人简介..." style="height:80px"></textarea></div>
+        <div class="form-group">
+            <label>照片墙</label>
+            <div class="photo-wall" id="edit-photo-wall">
+                <div class="photo-add-btn" onclick="openPhotoUrlModal()">+</div>
+            </div>
+        </div>
+        <div class="btn-row">
+            <button class="btn btn-cancel" onclick="closeEditModal()">取消</button>
+            <button class="btn btn-save" onclick="saveUserEdit()">保存</button>
+        </div>
+    </div>
+</div>
+
+<!-- 添加照片URL弹窗 -->
+<div class="photo-url-modal" id="photoUrlModal">
+    <div class="photo-url-modal-content">
+        <h4>添加照片URL</h4>
+        <input type="url" id="photo-url-input" placeholder="https://example.com/photo.jpg">
+        <div class="btn-row">
+            <button class="btn btn-cancel" onclick="closePhotoUrlModal()">取消</button>
+            <button class="btn btn-confirm" onclick="confirmAddPhoto()">确认</button>
+        </div>
+    </div>
+</div>
+
+<script>
+// 扩展 tab 点击事件
+var originalClick = null;
+document.querySelectorAll('.tab').forEach(function(t){
+    t.onclick=function(){
+        document.querySelectorAll('.tab').forEach(function(x){x.classList.remove('active')});
+        document.querySelectorAll('.tab-pane').forEach(function(x){x.classList.remove('active')});
+        t.classList.add('active');
+        document.getElementById('pane-'+t.dataset.tab).classList.add('active');
+        // 加载对应数据
+        if(t.dataset.tab==='reports') loadReports();
+        if(t.dataset.tab==='announcements') loadAnnouncements();
+        if(t.dataset.tab==='sensitive') loadSensitiveWords();
+        var m={overview:loadOverview,users:loadUsers,payments:loadPayments,posts:loadPosts};
+        if(m[t.dataset.tab]) m[t.dataset.tab]();
+    };
+});
+
+// 举报管理
+function loadReports(){
+    fetch('/admin/api/reports')
+        .then(r=>r.json())
+        .then(d=>{
+            var html='';
+            if(!d.reports||!d.reports.length){
+                html='<div class="empty">暂无举报记录</div>';
+            } else {
+                d.reports.forEach(function(r){
+                    var statusColor={'pending':'badge-pending','processed':'badge-approved','ignored':'badge-off'}[r.status]||'badge-pending';
+                    html+='<div class="item" style="flex-direction:column;align-items:flex-start;">'+
+                        '<div style="display:flex;width:100%;justify-content:space-between;margin-bottom:6px;">'+
+                        '<span>举报人: '+r.reporter_nickname+'</span>'+
+                        '<span class="badge '+statusColor+'">'+r.status+'</span></div>'+
+                        '<div style="font-size:12px;color:#888;">被举报: '+r.reported_nickname+'</div>'+
+                        '<div style="font-size:12px;color:#ff6b9d;margin:4px 0;">原因: '+r.reason+'</div>'+
+                        '<div style="display:flex;gap:6px;margin-top:6px;">'+
+                        '<button class="btn btn-sm btn-success" onclick="handleReport('+r.id+',\'approve\')">封禁用户</button>'+
+                        '<button class="btn btn-sm btn-off" onclick="handleReport('+r.id+',\'reject\')">驳回</button></div></div>';
+                });
+            }
+            document.getElementById('report-list').innerHTML=html;
+        });
+}
+
+function handleReport(id,action){
+    fetch('/admin/api/report/'+id+'/handle',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({action:action})
+    }).then(r=>r.json()).then(d=>{
+        alert(d.message);
+        loadReports();
+    });
+}
+
+// 公告管理
+function loadAnnouncements(){
+    fetch('/admin/api/announcements')
+        .then(r=>r.json())
+        .then(d=>{
+            var html='';
+            if(!d.announcements||!d.announcements.length){
+                html='<div class="empty">暂无公告</div>';
+            } else {
+                d.announcements.forEach(function(a){
+                    html+='<div class="item" style="flex-direction:column;align-items:flex-start;">'+
+                        '<div style="display:flex;width:100%;justify-content:space-between;margin-bottom:4px;">'+
+                        '<strong>'+a.title+'</strong>'+
+                        '<span style="font-size:11px;color:'+(a.is_active?'#2ed573':'#888')+';">'+(a.is_active?'启用':'禁用')+'</span></div>'+
+                        '<div style="font-size:12px;color:#888;margin-bottom:6px;">'+a.content.substring(0,50)+'...</div>'+
+                        '<div style="display:flex;gap:6px;">'+
+                        '<button class="btn btn-sm '+(a.is_active?'btn-off':'btn-pink')+'" onclick="toggleAnn('+a.id+')">'+(a.is_active?'禁用':'启用')+'</button>'+
+                        '<button class="btn btn-sm btn-danger" onclick="deleteAnn('+a.id+')">删除</button></div></div>';
+                });
+            }
+            document.getElementById('ann-list').innerHTML=html;
+        });
+}
+
+function createAnnouncement(){
+    var title=document.getElementById('ann-title').value.trim();
+    var content=document.getElementById('ann-content').value.trim();
+    var is_active=document.getElementById('ann-active').checked;
+    if(!title||!content){alert('请填写标题和内容');return;}
+    fetch('/admin/api/announcement',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({title:title,content:content,is_active:is_active})
+    }).then(r=>r.json()).then(d=>{
+        if(d.ok){
+            alert('发布成功');
+            document.getElementById('ann-title').value='';
+            document.getElementById('ann-content').value='';
+            loadAnnouncements();
+        } else {
+            alert(d.error||'发布失败');
+        }
+    });
+}
+
+function toggleAnn(id){
+    fetch('/admin/api/announcement/'+id+'/toggle',{method:'POST'})
+        .then(r=>r.json()).then(d=>loadAnnouncements());
+}
+
+function deleteAnn(id){
+    if(!confirm('确定删除?'))return;
+    fetch('/admin/api/announcement/'+id,{method:'DELETE'})
+        .then(r=>r.json()).then(d=>loadAnnouncements());
+}
+
+// 敏感词管理
+function loadSensitiveWords(){
+    fetch('/admin/api/sensitive-words')
+        .then(r=>r.json())
+        .then(d=>{
+            var html='';
+            document.getElementById('sw-count').textContent=d.total||0;
+            if(!d.words||!d.words.length){
+                html='<div class="empty">暂无敏感词</div>';
+            } else {
+                var catNames={contact:'联系方式',adult:'涉黄',fraud:'诈骗',other:'其他'};
+                d.words.forEach(function(w){
+                    html+='<div class="item">'+
+                        '<span style="flex:1;">'+w.word+'</span>'+
+                        '<span class="badge" style="background:#333;color:#888;margin-right:6px;">'+catNames[w.category]+'</span>'+
+                        '<button class="btn btn-sm btn-danger" onclick="deleteSW('+w.id+')">删</button></div>';
+                });
+            }
+            document.getElementById('sw-list').innerHTML=html;
+        });
+}
+
+function addSensitiveWord(){
+    var word=document.getElementById('sw-word').value.trim();
+    var category=document.getElementById('sw-category').value;
+    if(!word){alert('请输入敏感词');return;}
+    fetch('/admin/api/sensitive-word',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({word:word,category:category})
+    }).then(r=>r.json()).then(d=>{
+        if(d.ok){
+            alert('添加成功');
+            document.getElementById('sw-word').value='';
+            loadSensitiveWords();
+        } else {
+            alert(d.error||'添加失败');
+        }
+    });
+}
+
+function deleteSW(id){
+    if(!confirm('确定删除?'))return;
+    fetch('/admin/api/sensitive-word/'+id,{method:'DELETE'})
+        .then(r=>r.json()).then(d=>loadSensitiveWords());
+}
+
+// 编辑用户资料
+var currentPhotos = []; // 当前编辑的照片列表
+
+function openEditModal(userId){
+    document.getElementById('edit-user-id').value = userId;
+    currentPhotos = [];
+    // 清空表单
+    document.getElementById('edit-avatar').value = '';
+    document.getElementById('edit-nickname').value = '';
+    document.getElementById('edit-height').value = '';
+    document.getElementById('edit-occupation').value = '';
+    document.getElementById('edit-interests').value = '';
+    document.getElementById('edit-looking-for').value = '';
+    document.getElementById('edit-city').value = '';
+    document.getElementById('edit-bio').value = '';
+    renderPhotoWall();
+    
+    // 获取用户现有信息
+    fetch('/admin/api/user/'+userId)
+        .then(r=>r.json())
+        .then(d=>{
+            if(d.user){
+                document.getElementById('edit-avatar').value = d.user.avatar || '';
+                document.getElementById('edit-nickname').value = d.user.nickname || '';
+                document.getElementById('edit-height').value = d.user.height || '';
+                document.getElementById('edit-occupation').value = d.user.occupation || '';
+                document.getElementById('edit-interests').value = (d.user.interests||[]).join(',');
+                document.getElementById('edit-looking-for').value = d.user.looking_for || '';
+                document.getElementById('edit-city').value = d.user.city || '';
+                document.getElementById('edit-bio').value = d.user.bio || '';
+                // 加载照片墙
+                currentPhotos = d.user.photos || [];
+                renderPhotoWall();
+            }
+        });
+    
+    document.getElementById('editModal').classList.add('active');
+}
+
+function closeEditModal(){
+    document.getElementById('editModal').classList.remove('active');
+}
+
+// 渲染照片墙
+function renderPhotoWall(){
+    var wall = document.getElementById('edit-photo-wall');
+    var html = '';
+    currentPhotos.forEach(function(url, idx){
+        html += '<div class="photo-wall-item">' +
+            '<img src="'+url+'" alt="照片'+(idx+1)+'" onerror="this.src=\'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 60 60%22><rect fill=%22%232a2a4a%22 width=%2260%22 height=%2260%22/><text x=%2230%22 y=%2235%22 text-anchor=%22middle%22 fill=%22%23888%22 font-size=%2212%22>?</text></svg>\'">' +
+            '<button class="del-btn" onclick="removePhoto('+idx+')">&times;</button></div>';
+    });
+    html += '<div class="photo-add-btn" onclick="openPhotoUrlModal()">+</div>';
+    wall.innerHTML = html;
+}
+
+// 打开添加照片URL弹窗
+function openPhotoUrlModal(){
+    document.getElementById('photo-url-input').value = '';
+    document.getElementById('photoUrlModal').classList.add('active');
+    document.getElementById('photo-url-input').focus();
+}
+
+// 关闭添加照片URL弹窗
+function closePhotoUrlModal(){
+    document.getElementById('photoUrlModal').classList.remove('active');
+}
+
+// 确认添加照片
+function confirmAddPhoto(){
+    var url = document.getElementById('photo-url-input').value.trim();
+    if(!url){
+        alert('请输入图片URL');
+        return;
+    }
+    if(!url.startsWith('http://') && !url.startsWith('https://')){
+        alert('请输入有效的URL（以http://或https://开头）');
+        return;
+    }
+    currentPhotos.push(url);
+    renderPhotoWall();
+    closePhotoUrlModal();
+}
+
+// 删除照片
+function removePhoto(idx){
+    if(confirm('确定删除这张照片？')){
+        currentPhotos.splice(idx, 1);
+        renderPhotoWall();
+    }
+}
+
+function saveUserEdit(){
+    var userId = document.getElementById('edit-user-id').value;
+    var data = {
+        avatar: document.getElementById('edit-avatar').value.trim(),
+        nickname: document.getElementById('edit-nickname').value.trim(),
+        height: document.getElementById('edit-height').value,
+        occupation: document.getElementById('edit-occupation').value.trim(),
+        interests: document.getElementById('edit-interests').value.trim(),
+        looking_for: document.getElementById('edit-looking-for').value.trim(),
+        city: document.getElementById('edit-city').value.trim(),
+        bio: document.getElementById('edit-bio').value.trim(),
+        photos: currentPhotos
+    };
+    
+    fetch('/admin/api/user/'+userId+'/edit',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify(data)
+    }).then(r=>r.json()).then(d=>{
+        if(d.ok){
+            alert('保存成功');
+            closeEditModal();
+            loadUsers();
+            loadFakes();
+        } else {
+            alert(d.error||'保存失败');
+        }
+    });
+}
+
+// ==================== 假数据生成 ====================
+function generateFakeUsers() {
+    var count = parseInt(document.getElementById('gen-user-count').value) || 10;
+    var resultEl = document.getElementById('gen-user-result');
+    resultEl.textContent = '生成中...';
+    resultEl.style.color = '#ff6b9d';
+    fetch('/admin/api/generate-fake-users', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({count: count})
+    }).then(function(r){return r.json()}).then(function(d){
+        if(d.success){
+            resultEl.textContent = '✅ ' + d.message;
+            resultEl.style.color = '#43e97b';
+        } else {
+            resultEl.textContent = '❌ ' + (d.message || '生成失败');
+            resultEl.style.color = '#ff6b9d';
+        }
+    }).catch(function(e){
+        resultEl.textContent = '❌ 请求失败';
+        resultEl.style.color = '#ff6b9d';
+    });
+}
+
+function generateFakePosts() {
+    var count = parseInt(document.getElementById('gen-post-count').value) || 10;
+    var resultEl = document.getElementById('gen-post-result');
+    resultEl.textContent = '生成中...';
+    resultEl.style.color = '#c44dff';
+    fetch('/admin/api/generate-fake-posts', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({count: count})
+    }).then(function(r){return r.json()}).then(function(d){
+        if(d.success){
+            resultEl.textContent = '✅ ' + d.message;
+            resultEl.style.color = '#43e97b';
+        } else {
+            resultEl.textContent = '❌ ' + (d.message || '生成失败');
+            resultEl.style.color = '#c44dff';
+        }
+    }).catch(function(e){
+        resultEl.textContent = '❌ 请求失败';
+        resultEl.style.color = '#c44dff';
+    });
+}
+
+function generateFakeVisitors() {
+    var count = parseInt(document.getElementById('gen-visitor-count').value) || 20;
+    var resultEl = document.getElementById('gen-visitor-result');
+    resultEl.textContent = '生成中...';
+    resultEl.style.color = '#4facfe';
+    fetch('/admin/api/generate-fake-visitors', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({count: count})
+    }).then(function(r){return r.json()}).then(function(d){
+        if(d.success){
+            resultEl.textContent = '✅ ' + d.message;
+            resultEl.style.color = '#43e97b';
+        } else {
+            resultEl.textContent = '❌ ' + (d.message || '生成失败');
+            resultEl.style.color = '#4facfe';
+        }
+    }).catch(function(e){
+        resultEl.textContent = '❌ 请求失败';
+        resultEl.style.color = '#4facfe';
+    });
+}
+</script>

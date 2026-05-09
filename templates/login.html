@@ -1,0 +1,685 @@
+{% extends "base.html" %}
+
+{% block title %}寻尤 - 登录注册{% endblock %}
+
+{% block extra_css %}
+<style>
+.login-wrapper {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    position: relative;
+    z-index: 1;
+}
+
+/* 简化背景 */
+.login-bg {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, #12122a 0%, #1a1035 50%, #12122a 100%);
+    z-index: 0;
+    overflow: hidden;
+}
+
+/* 简单光斑装饰 */
+.login-bg::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(ellipse at 30% 20%, rgba(255, 107, 157, 0.15) 0%, transparent 50%),
+                radial-gradient(ellipse at 70% 80%, rgba(196, 77, 255, 0.1) 0%, transparent 50%);
+    animation: float 20s ease-in-out infinite;
+}
+
+.login-bg::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    right: -30%;
+    width: 60%;
+    height: 60%;
+    background: radial-gradient(ellipse, rgba(255, 107, 157, 0.08) 0%, transparent 70%);
+    animation: float 15s ease-in-out infinite reverse;
+}
+
+@keyframes float {
+    0%, 100% { transform: translate(0, 0); }
+    50% { transform: translate(20px, 20px); }
+}
+
+.login-header {
+    text-align: center;
+    margin-bottom: 40px;
+    position: relative;
+    z-index: 2;
+}
+
+.login-logo {
+    font-size: 48px;
+    font-weight: 900;
+    background: linear-gradient(135deg, #ff6b9d, #c44dff, #ff6b9d);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 12px;
+    animation: shimmer 3s linear infinite;
+    letter-spacing: 3px;
+}
+
+.login-subtitle {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.5);
+    letter-spacing: 4px;
+}
+
+.auth-tabs {
+    display: flex;
+    background: rgba(255, 255, 255, 0.06);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 30px;
+    padding: 4px;
+    margin-bottom: 30px;
+    width: 100%;
+    max-width: 280px;
+}
+
+.auth-tab {
+    flex: 1;
+    padding: 12px;
+    text-align: center;
+    border-radius: 26px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.auth-tab.active {
+    background: linear-gradient(135deg, #ff6b9d, #c44dff);
+    color: white;
+    box-shadow: 0 4px 20px rgba(255, 107, 157, 0.3);
+}
+
+.login-form-container {
+    width: 100%;
+    max-width: 340px;
+    position: relative;
+    z-index: 2;
+}
+
+.form-step {
+    display: none;
+    animation: fadeIn 0.3s ease;
+}
+
+.form-step.active {
+    display: block;
+}
+
+.form-group {
+    position: relative;
+    margin-bottom: 16px;
+}
+
+.form-input {
+    width: 100%;
+    padding: 16px 20px 16px 50px;
+    background: rgba(255, 255, 255, 0.06);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 30px;
+    color: white;
+    font-size: 15px;
+    outline: none;
+    transition: all 0.3s ease;
+}
+
+.form-input::placeholder {
+    color: rgba(255, 255, 255, 0.35);
+}
+
+.form-input:focus {
+    border-color: #ff6b9d;
+    box-shadow: 0 0 20px rgba(255, 107, 157, 0.2);
+}
+
+.form-input-icon {
+    position: absolute;
+    left: 18px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: rgba(255, 255, 255, 0.35);
+    font-size: 16px;
+}
+
+.verify-row {
+    display: flex;
+    gap: 12px;
+}
+
+.verify-row .form-input {
+    flex: 1;
+}
+
+.verify-btn {
+    padding: 16px 16px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 30px;
+    color: #ff6b9d;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+}
+
+.verify-btn:hover {
+    background: rgba(255, 107, 157, 0.15);
+}
+
+.verify-btn:disabled {
+    color: rgba(255, 255, 255, 0.35);
+    cursor: not-allowed;
+}
+
+.btn-login {
+    width: 100%;
+    padding: 16px;
+    background: linear-gradient(135deg, #ff6b9d, #c44dff);
+    border: none;
+    border-radius: 30px;
+    color: white;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    box-shadow: 0 10px 30px rgba(255, 107, 157, 0.3);
+    margin-top: 10px;
+}
+
+.btn-login::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    transition: left 0.5s ease;
+}
+
+.btn-login:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 15px 40px rgba(255, 107, 157, 0.4);
+}
+
+.btn-login:hover::before {
+    left: 100%;
+}
+
+.btn-login:active {
+    transform: scale(0.98);
+}
+
+.btn-login:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* 性别选择 */
+.gender-select {
+    display: flex;
+    gap: 16px;
+    margin: 20px 0;
+}
+
+.gender-option {
+    flex: 1;
+    padding: 24px 16px;
+    background: rgba(255, 255, 255, 0.06);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 2px solid rgba(255, 255, 255, 0.08);
+    border-radius: 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.gender-option:hover {
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.gender-option.selected {
+    border-width: 2px;
+}
+
+.gender-option.male.selected {
+    border-color: #4facfe;
+    background: rgba(79, 172, 254, 0.1);
+}
+
+.gender-option.female.selected {
+    border-color: #ff6b9d;
+    background: rgba(255, 107, 157, 0.1);
+}
+
+.gender-option i {
+    font-size: 36px;
+    margin-bottom: 8px;
+    display: block;
+}
+
+.gender-option.male i { color: #4facfe; }
+.gender-option.female i { color: #ff6b9d; }
+
+.gender-option span {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+/* 头像上传 */
+.avatar-upload-area {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.avatar-upload {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.06);
+    border: 2px dashed rgba(255, 255, 255, 0.15);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    overflow: hidden;
+}
+
+.avatar-upload:hover {
+    border-color: #ff6b9d;
+    border-style: solid;
+}
+
+.avatar-upload i {
+    font-size: 28px;
+    color: rgba(255, 255, 255, 0.35);
+    margin-bottom: 4px;
+}
+
+.avatar-upload span {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.35);
+}
+
+.avatar-upload img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.avatar-hint {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.35);
+    margin-top: 12px;
+}
+
+.step-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: white;
+    text-align: center;
+    margin-bottom: 24px;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes shimmer {
+    0% { background-position: -200% center; }
+    100% { background-position: 200% center; }
+}
+
+.back-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 14px;
+    cursor: pointer;
+    transition: color 0.3s;
+    margin-bottom: 20px;
+}
+
+.back-btn:hover {
+    color: white;
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var currentStep = 0;
+    var selectedGender = '';
+    var phone = '';
+    var countdown = 0;
+    
+    // Tab切换
+    document.querySelectorAll('.auth-tab').forEach(function(tab) {
+        tab.addEventListener('click', function() {
+            var tabType = this.dataset.tab;
+            document.querySelectorAll('.auth-tab').forEach(function(t) { t.classList.remove('active'); });
+            this.classList.add('active');
+            if (tabType === 'login') { showStep(0); } else { showStep(1); }
+        });
+    });
+    
+    // 显示步骤
+    function showStep(step) {
+        currentStep = step;
+        document.querySelectorAll('.form-step').forEach(function(el) { el.classList.remove('active'); });
+        var target = document.querySelector('.form-step[data-step="' + step + '"]');
+        if (target) target.classList.add('active');
+    }
+    
+    // 发送验证码
+    var verifyTimer = null;
+    window.sendVerifyCode = async function() {
+        var phoneInput = document.getElementById('loginPhone');
+        phone = phoneInput.value;
+        
+        if (!phone || phone.length !== 11) {
+            showToast('请输入正确的手机号', 'error');
+            return;
+        }
+        
+        var checkRes = await api('/api/check-phone', {
+            method: 'POST',
+            body: JSON.stringify({ phone: phone })
+        });
+        
+        var res = await api('/api/send-verify-code', {
+            method: 'POST',
+            body: JSON.stringify({ phone: phone })
+        });
+        
+        if (res.success) {
+            showToast('验证码已发送');
+            startVerifyCountdown();
+        }
+    };
+    
+    // 验证码倒计时
+    function startVerifyCountdown() {
+        countdown = 60;
+        var btn = document.querySelector('.verify-btn');
+        btn.disabled = true;
+        btn.textContent = countdown + 's后重试';
+        
+        verifyTimer = setInterval(function() {
+            countdown--;
+            if (countdown <= 0) {
+                clearInterval(verifyTimer);
+                btn.disabled = false;
+                btn.textContent = '获取验证码';
+            } else {
+                btn.textContent = countdown + 's后重试';
+            }
+        }, 1000);
+    }
+    
+    // 登录
+    window.login = async function() {
+        var phone = document.getElementById('loginPhone').value;
+        var password = document.getElementById('loginPassword').value;
+        
+        if (!phone || !password) {
+            showToast('请填写完整信息', 'error');
+            return;
+        }
+        
+        var res = await api('/api/login', {
+            method: 'POST',
+            body: JSON.stringify({ phone: phone, password: password })
+        });
+        
+        if (res.success) {
+            showToast('登录成功');
+            if (res.needs_profile) {
+                window.location.href = '/setup-profile';
+            } else {
+                window.location.href = '/home';
+            }
+        } else {
+            showToast(res.message || '登录失败', 'error');
+        }
+    };
+    
+    // 注册 - 下一步
+    window.registerNext = async function() {
+        var phoneInput = document.getElementById('regPhone');
+        var verifyCode = document.getElementById('verifyCode').value;
+        phone = phoneInput.value;
+        
+        if (!phone || phone.length !== 11) {
+            showToast('请输入正确的手机号', 'error');
+            return;
+        }
+        
+        if (!verifyCode || verifyCode.length !== 4) {
+            showToast('请输入4位验证码', 'error');
+            return;
+        }
+        
+        var checkRes = await api('/api/check-phone', {
+            method: 'POST',
+            body: JSON.stringify({ phone: phone })
+        });
+        
+        if (checkRes.exists) {
+            showToast('该手机号已注册，请直接登录', 'error');
+            return;
+        }
+        
+        var res = await api('/api/register', {
+            method: 'POST',
+            body: JSON.stringify({ phone: phone, verify_code: verifyCode, password: '123456' })
+        });
+        
+        if (res.success) {
+            showToast('注册成功');
+            showStep(3);
+        } else {
+            showToast(res.message || '注册失败', 'error');
+        }
+    };
+    
+    // 选择性别
+    window.selectGender = function(gender) {
+        selectedGender = gender;
+        document.querySelectorAll('.gender-option').forEach(function(el) { el.classList.remove('selected'); });
+        var target = document.querySelector('.gender-option.' + gender);
+        if (target) target.classList.add('selected');
+    };
+    
+    // 确认性别
+    window.confirmGender = async function() {
+        if (!selectedGender) {
+            showToast('请选择性别', 'error');
+            return;
+        }
+        var res = await api('/api/profile', {
+            method: 'POST',
+            body: JSON.stringify({ gender: selectedGender })
+        });
+        if (res.success) { showStep(4); } else { showToast('设置失败', 'error'); }
+    };
+    
+    // 头像上传
+    window.uploadAvatar = function(input) {
+        if (input.files && input.files[0]) {
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                var preview = document.getElementById('avatarPreview');
+                preview.src = e.target.result;
+                preview.style.display = 'block';
+                var upload = document.querySelector('.avatar-upload');
+                upload.querySelector('i').style.display = 'none';
+                upload.querySelector('span').style.display = 'none';
+            };
+            reader.readAsDataURL(input.files[0]);
+            
+            var formData = new FormData();
+            formData.append('avatar', input.files[0]);
+            
+            fetch('/api/upload-avatar', { method: 'POST', body: formData })
+                .then(function(r) { return r.json(); })
+                .then(function(res) { if (res.success) showToast('头像上传成功'); });
+        }
+    };
+    
+    // 保存资料
+    window.saveProfile = async function() {
+        var nickname = document.getElementById('nickname').value;
+        var age = document.getElementById('age').value;
+        var city = document.getElementById('city').value;
+        var bio = document.getElementById('bio').value;
+        
+        if (!nickname) { showToast('请输入昵称', 'error'); return; }
+        
+        var res = await api('/api/profile', {
+            method: 'POST',
+            body: JSON.stringify({ nickname: nickname, age: age, city: city, bio: bio, gender: selectedGender })
+        });
+        
+        if (res.success) {
+            showToast('资料完善成功');
+            window.location.href = '/home';
+        } else {
+            showToast('保存失败', 'error');
+        }
+    };
+    
+    // 初始化
+    {% if page == 'register' %}
+    showStep(1);
+    {% elif page == 'setup' %}
+    showStep(3);
+    {% endif %}
+});
+</script>
+{% endblock %}
+
+{% block body %}
+<div class="login-bg"></div>
+<div class="login-wrapper">
+    <div class="login-header">
+        <h1 class="login-logo"><img src="/static/logo.png" style="width:50px;height:50px;border-radius:12px;vertical-align:middle;margin-right:8px;">寻尤</h1>
+        <p class="login-subtitle">遇见有趣的灵魂</p>
+    </div>
+    
+    <div class="auth-tabs">
+        <div class="auth-tab active" data-tab="login">登录</div>
+        <div class="auth-tab" data-tab="register">注册</div>
+    </div>
+    
+    <div class="login-form-container">
+        <!-- 登录表单 -->
+        <div class="form-step active" data-step="0">
+            <div class="form-group">
+                <i class="fas fa-phone form-input-icon"></i>
+                <input type="tel" id="loginPhone" class="form-input" placeholder="手机号" maxlength="11">
+            </div>
+            <div class="form-group">
+                <i class="fas fa-lock form-input-icon"></i>
+                <input type="password" id="loginPassword" class="form-input" placeholder="密码">
+            </div>
+            <button class="btn-login" onclick="login()">登 录</button>
+        </div>
+        
+        <!-- 注册-手机号 -->
+        <div class="form-step" data-step="1">
+            <div class="form-group">
+                <i class="fas fa-phone form-input-icon"></i>
+                <input type="tel" id="regPhone" class="form-input" placeholder="手机号" maxlength="11">
+            </div>
+            <div class="form-group">
+                <div class="verify-row">
+                    <input type="text" id="verifyCode" class="form-input" placeholder="验证码" maxlength="4">
+                    <button class="verify-btn" onclick="sendVerifyCode()">获取验证码</button>
+                </div>
+            </div>
+            <button class="btn-login" onclick="registerNext()">下一步</button>
+        </div>
+        
+        <!-- 性别选择 -->
+        <div class="form-step" data-step="3">
+            <div class="step-title">选择你的性别</div>
+            <div class="gender-select">
+                <div class="gender-option male" onclick="selectGender('male')">
+                    <i class="fas fa-mars"></i>
+                    <span>我是男生</span>
+                </div>
+                <div class="gender-option female" onclick="selectGender('female')">
+                    <i class="fas fa-venus"></i>
+                    <span>我是女生</span>
+                </div>
+            </div>
+            <button class="btn-login" onclick="confirmGender()">确认</button>
+        </div>
+        
+        <!-- 完善资料 -->
+        <div class="form-step" data-step="4">
+            <div class="avatar-upload-area">
+                <div class="avatar-upload" onclick="document.getElementById('avatarInput').click()">
+                    <img id="avatarPreview" style="display:none">
+                    <i class="fas fa-camera"></i>
+                    <span>上传头像</span>
+                </div>
+                <input type="file" id="avatarInput" accept="image/*" style="display:none" onchange="uploadAvatar(this)">
+                <p class="avatar-hint">上传真实头像更容易获得回复</p>
+            </div>
+            
+            <div class="form-group">
+                <input type="text" id="nickname" class="form-input" placeholder="昵称" style="padding-left:20px">
+            </div>
+            <div class="form-group">
+                <input type="number" id="age" class="form-input" placeholder="年龄" min="18" max="100" style="padding-left:20px">
+            </div>
+            <div class="form-group">
+                <input type="text" id="city" class="form-input" placeholder="所在城市" style="padding-left:20px">
+            </div>
+            <div class="form-group">
+                <input type="text" id="bio" class="form-input" placeholder="个性签名（50字以内）" maxlength="50" style="padding-left:20px">
+            </div>
+            <button class="btn-login" onclick="saveProfile()">开始探索</button>
+        </div>
+    </div>
+</div>
+{% endblock %}

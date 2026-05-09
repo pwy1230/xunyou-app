@@ -1,0 +1,51 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Database
+instance/
+*.db
+*.sqlite3
+
+# Uploads (user-generated content)
+static/uploads/avatars/img_*
+static/uploads/photos/
+static/uploads/posts/
+
+# Output/build
+output/
+*.zip
+*.tar.gz
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Backup
+templates_backup/
+
+# Env
+.env
+venv/
+.venv/
+
+# Old fix scripts (not needed for deployment)
+fix_*.py
+update*.py
+rebuild_pages.py
+upgrade_ui_color.py
+install_features.py
+splash_preview.html
+test_start.py
+闫雨浪/
+
+# Deploy directory (generated locally)
+deploy/

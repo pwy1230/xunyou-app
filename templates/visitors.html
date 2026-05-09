@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+
+{% block title %}寻尤 - 谁看过我{% endblock %}
+
+{% block extra_css %}
+{{ super() }}
+<style>
+.visitors-page {
+    padding-bottom: 20px;
+}
+.visitors-list {
+    padding: 16px;
+}
+.visitor-card {
+    display: flex;
+    align-items: center;
+    padding: 14px 16px;
+    background: var(--bg-card);
+    border-radius: var(--radius);
+    margin-bottom: 12px;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+.visitor-card:active {
+    transform: scale(0.98);
+}
+.visitor-avatar {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    overflow: hidden;
+    margin-right: 14px;
+    flex-shrink: 0;
+}
+.visitor-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.visitor-info {
+    flex: 1;
+    min-width: 0;
+}
+.visitor-name {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.visitor-name .online-dot {
+    width: 8px;
+    height: 8px;
+    background: #4caf50;
+    border-radius: 50%;
+}
+.visitor-meta {
+    font-size: 13px;
+    color: var(--text-muted);
+}
+.visitor-time {
+    font-size: 12px;
+    color: var(--text-muted);
+    text-align: right;
+}
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+}
+.empty-state i {
+    font-size: 64px;
+    color: var(--text-muted);
+    margin-bottom: 16px;
+}
+.empty-state p {
+    color: var(--text-muted);
+    font-size: 15px;
+}
+.loading {
+    text-align: center;
+    padding: 40px;
+}
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="page-container visitors-page">
+    <div class="header">
+        <div class="header-back" onclick="history.back()">
+            <i class="fas fa-arrow-left"></i>
+        </div>
+        <div class="header-title">谁看过我</div>
+        <div style="width:40px;"></div>
+    </div>
+    
+    <div class="main-content">
+        <div class="visitors-list" id="visitorsList">
+            <div class="loading"><div class="loading-spinner"></div></div>
+        </div>
+    </div>
+    
+    {% include 'tabbar.html' %}
+</div>
+
+<script>
+async function loadVisitors() {
+    const container = document.getElementById('visitorsList');
+    
+    try {
+        const res = await api('/api/visitors');
+        if (res.success && res.visitors && res.visitors.length > 0) {
+            container.innerHTML = res.visitors.map(v => `
+                <div class="visitor-card" onclick="location.href='/user/${v.visitor.id}'">
+                    <div class="visitor-avatar">
+                        ${v.visitor.avatar 
+                            ? `<img src="${v.visitor.avatar}" alt="">`
+                            : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:var(--bg-input);"><i class="fas fa-user" style="font-size:24px;color:var(--text-muted);"></i></div>`
+                        }
+                    </div>
+                    <div class="visitor-info">
+                        <div class="visitor-name">
+                            ${v.visitor.nickname}
+                            ${v.visitor.is_online ? '<span class="online-dot"></span>' : ''}
+                        </div>
+                        <div class="visitor-meta">
+                            ${v.visitor.age}岁 · ${v.visitor.city || '未知城市'}
+                        </div>
+                    </div>
+                    <div class="visitor-time">${timeAgo(v.visited_at)}</div>
+                </div>
+            `).join('');
+        } else {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-eye-slash"></i>
+                    <p>还没有人看过你</p>
+                    <p style="margin-top:8px;font-size:13px;">去广场发个动态，让大家认识你吧~</p>
+                </div>
+            `;
+        }
+    } catch(e) {
+        container.innerHTML = `
+            <div class="empty-state">
+                <i class="fas fa-exclamation-circle" style="color:#ff6b6b;"></i>
+                <p>加载失败，请重试</p>
+            </div>
+        `;
+    }
+}
+
+loadVisitors();
+</script>
+{% endblock %}

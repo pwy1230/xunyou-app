@@ -1,0 +1,182 @@
+{% extends "base.html" %}
+
+{% block title %}寻尤 - 设置{% endblock %}
+{% block extra_css %}
+<style>
+
+        /* 全局背景光晕效果 */
+        body { position: relative; }
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: 
+                radial-gradient(ellipse at top left, rgba(196,77,255,0.08) 0%, transparent 50%),
+                radial-gradient(ellipse at bottom right, rgba(255,107,157,0.06) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: -1;
+        }
+        
+        /* 统一卡片毛玻璃效果 */
+        .user-card, .chat-item, .menu-item, .package-card, .profile-card, .post-card,
+        .visitor-card, .settings-group, .balance-card, .transaction-item {
+            background: rgba(255,255,255,0.06);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .user-card:hover, .chat-item:hover, .menu-item:hover, .package-card:hover,
+        .profile-card:hover, .post-card:hover, .visitor-card:hover {
+            border-color: rgba(255,255,255,0.2);
+        }
+        
+        /* 导航栏微光 */
+        .tab-bar {
+            box-shadow: 0 -1px 20px rgba(255,107,157,0.08);
+        }
+        
+        /* 按钮微发光 */
+        .greet-btn, .fab, .action-btn, .balance-btn, .chat-send-btn {
+            box-shadow: 0 4px 15px rgba(255,107,157,0.25);
+        }
+
+        /* settings.html - 冷蓝主题 */
+        .header-title {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .settings-item-icon { 
+            background: linear-gradient(135deg, rgba(102,126,234,0.2), rgba(118,75,162,0.2)); 
+            color: #667eea; 
+        }
+    
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="page-container">
+    <div class="header">
+        <div class="header-back" onclick="history.back()">
+            <i class="fas fa-arrow-left"></i>
+        </div>
+        <div class="header-title">设置</div>
+        <div style="width:40px;"></div>
+    </div>
+    
+    <div class="main-content" style="padding:16px;">
+        <div class="settings-group">
+            <div class="settings-item" onclick="location.href='/profile'">
+                <div class="settings-item-left">
+                    <div class="settings-item-icon"><i class="fas fa-user"></i></div>
+                    <div class="settings-item-text">
+                        <h4>个人资料</h4>
+                        <p>修改头像、昵称等信息</p>
+                    </div>
+                </div>
+                <div class="settings-item-arrow"><i class="fas fa-chevron-right"></i></div>
+            </div>
+            <div class="settings-item" onclick="location.href='/wallet'">
+                <div class="settings-item-left">
+                    <div class="settings-item-icon"><i class="fas fa-coins"></i></div>
+                    <div class="settings-item-text">
+                        <h4>我的钱包</h4>
+                        <p>查看余额、充值提现</p>
+                    </div>
+                </div>
+                <div class="settings-item-arrow"><i class="fas fa-chevron-right"></i></div>
+            </div>
+        </div>
+        
+        <div class="settings-group">
+            <div class="settings-item">
+                <div class="settings-item-left">
+                    <div class="settings-item-icon"><i class="fas fa-bell"></i></div>
+                    <div class="settings-item-text">
+                        <h4>消息通知</h4>
+                        <p>新消息提醒设置</p>
+                    </div>
+                </div>
+                <div class="settings-item-arrow"><i class="fas fa-chevron-right"></i></div>
+            </div>
+            <div class="settings-item">
+                <div class="settings-item-left">
+                    <div class="settings-item-icon"><i class="fas fa-shield-alt"></i></div>
+                    <div class="settings-item-text">
+                        <h4>隐私设置</h4>
+                        <p>谁可以查看我的动态</p>
+                    </div>
+                </div>
+                <div class="settings-item-arrow"><i class="fas fa-chevron-right"></i></div>
+            </div>
+            <div class="settings-item">
+                <div class="settings-item-left">
+                    <div class="settings-item-icon"><i class="fas fa-ban"></i></div>
+                    <div class="settings-item-text">
+                        <h4>黑名单</h4>
+                        <p>管理已拉黑的用户</p>
+                    </div>
+                </div>
+                <div class="settings-item-arrow"><i class="fas fa-chevron-right"></i></div>
+            </div>
+        </div>
+        
+        {% if current_user.id == 1 %}
+        <div class="settings-group">
+            <div class="settings-item" onclick="location.href='/admin'">
+                <div class="settings-item-left">
+                    <div class="settings-item-icon" style="background:rgba(255,152,0,0.15);color:#ff9800;">
+                        <i class="fas fa-cog"></i>
+                    </div>
+                    <div class="settings-item-text">
+                        <h4>后台管理</h4>
+                        <p>平台数据与管理功能</p>
+                    </div>
+                </div>
+                <div class="settings-item-arrow"><i class="fas fa-chevron-right"></i></div>
+            </div>
+        </div>
+        {% endif %}
+        
+        <div class="settings-group">
+            <div class="settings-item">
+                <div class="settings-item-left">
+                    <div class="settings-item-icon"><i class="fas fa-question-circle"></i></div>
+                    <div class="settings-item-text">
+                        <h4>帮助与反馈</h4>
+                        <p>常见问题与建议</p>
+                    </div>
+                </div>
+                <div class="settings-item-arrow"><i class="fas fa-chevron-right"></i></div>
+            </div>
+            <div class="settings-item">
+                <div class="settings-item-left">
+                    <div class="settings-item-icon"><i class="fas fa-info-circle"></i></div>
+                    <div class="settings-item-text">
+                        <h4>关于我们</h4>
+                        <p>v1.0.0 MVP版本</p>
+                    </div>
+                </div>
+                <div class="settings-item-arrow"><i class="fas fa-chevron-right"></i></div>
+            </div>
+        </div>
+        
+        <div style="padding:20px 0;">
+            <button class="btn btn-secondary btn-block" onclick="logout()">
+                <i class="fas fa-sign-out-alt"></i> 退出登录
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+async function logout() {
+    if (!confirm('确定要退出登录吗？')) return;
+    
+    const response = await api('/api/logout', { method: 'POST' });
+    if (response.success) {
+        window.location.href = '/login';
+    }
+}
+</script>
+{% endblock %}

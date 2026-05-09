@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>发现 - 寻尤</title>
+    <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0a1a;
+            color: #fff;
+            min-height: 100vh;
+            padding-bottom: 80px;
+            overflow-x: hidden;
+        }
+        
+        body::before {
+            content: '';
+            position: fixed;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(ellipse at 30% 20%, rgba(255, 100, 150, 0.08) 0%, transparent 50%),
+                        radial-gradient(ellipse at 70% 60%, rgba(100, 100, 255, 0.06) 0%, transparent 50%);
+            z-index: 0;
+            pointer-events: none;
+        }
+        
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 430px;
+            margin: 0 auto;
+        }
+        
+        /* 顶部栏 */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            background: rgba(15, 15, 30, 0.9);
+            backdrop-filter: blur(10px);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .header-title {
+            font-size: 20px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #ff6b9d, #c44cff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        
+        .coin-display {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            background: rgba(255, 200, 100, 0.15);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            color: #ffc864;
+        }
+        
+        .coin-display i {
+            color: #ffd700;
+        }
+        
+        .icon-btn {
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            color: #fff;
+            text-decoration: none;
+            position: relative;
+        }
+        
+        .icon-btn .badge {
+            position: absolute;
+            top: -2px;
+            right: -2px;
+            width: 16px;
+            height: 16px;
+            background: #ff4757;
+            border-radius: 50%;
+            font-size: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* 轮播Banner */
+        .banner-section {
+            padding: 12px 16px;
+        }
+        
+        .banner-slider {
+            position: relative;
+            height: 130px;
+            border-radius: 16px;
+            overflow: hidden;
+        }
+        
+        .banner-slides {
+            display: flex;
+            transition: transform 0.4s ease;
+            height: 100%;
+        }
+        
+        .banner-slide {
+            min-width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 20px 24px;
+        }
+        
+        .banner-slide:nth-child(1) {
+            background: linear-gradient(135deg, #ff6b9d, #c44cff);
+        }
+        
+        .banner-slide:nth-child(2) {
+            background: linear-gradient(135deg, #4facfe, #7c3aed);
+        }
+        
+        .banner-slide:nth-child(3) {
+            background: linear-gradient(135deg, #f093fb, #f5576c);
+        }
+        
+        .banner-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+        
+        .banner-subtitle {
+            font-size: 13px;
+            opacity: 0.9;
+        }
+        
+        .banner-dots {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 6px;
+        }
+        
+        .banner-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.4);
+            transition: all 0.3s;
+        }
+        
+        .banner-dot.active {
+            width: 18px;
+            border-radius: 3px;
+            background: #fff;
+        }
+        
+        /* 在线用户横滑 */
+        .online-section {
+            padding: 16px;
+        }
+        
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 12px;
+        }
+        
+        .section-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #ff6b9d;
+        }
+        
+        .online-scroll {
+            display: flex;
+            gap: 16px;
+            overflow-x: auto;
+            padding-bottom: 8px;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        .online-scroll::-webkit-scrollbar {
+            display: none;
+        }
+        
+        .online-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            min-width: 56px;
+            text-decoration: none;
+        }
+        
+        .online-avatar-wrap {
+            position: relative;
+        }
+        
+        .online-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .online-dot {
+            position: absolute;
+            bottom: 2px;
+            right: 2px;
+            width: 10px;
+            height: 10px;
+            background: #2ecc71;
+            border-radius: 50%;
+            border: 2px solid #0a0a1a;
+        }
+        
+        .online-name {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.8);
+            max-width: 56px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        /* Tab按钮 */
+        .tab-section {
+            padding: 0 16px 12px;
+        }
+        
+        .tab-buttons {
+            display: flex;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 4px;
+            border-radius: 24px;
+        }
+        
+        .tab-btn {
+            flex: 1;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: rgba(255, 255, 255, 0.6);
+            background: transparent;
+        }
+        
+        .tab-btn.active {
+            background: linear-gradient(135deg, #ff6b9d, #c44cff);
+            color: #fff;
+            box-shadow: 0 4px 15px rgba(255, 107, 157, 0.3);
+        }
+        
+        /* 照片瀑布流 */
+        .masonry-section {
+            padding: 12px 16px;
+        }
+        
+        .masonry-grid {
+            column-count: 2;
+            column-gap: 10px;
+        }
+        
+        .user-card {
+            break-inside: avoid;
+            margin-bottom: 10px;
+            border-radius: 16px;
+            overflow: hidden;
+            position: relative;
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(5px);
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .user-card:active {
+            transform: scale(0.98);
+        }
+        
+        .card-img {
+            width: 100%;
+            aspect-ratio: 1;
+            object-fit: cover;
+            display: block;
+        }
+        
+        .card-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 40px 12px 12px;
+            background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
+        }
+        
+        .card-info {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .card-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: #fff;
+        }
+        
+        .card-online-dot {
+            width: 8px;
+            height: 8px;
+            background: #2ecc71;
+            border-radius: 50%;
+        }
+        
+        .card-meta {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.7);
+            margin-top: 2px;
+        }
+        
+        /* VIP遮罩 */
+        .vip-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.75);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-radius: 16px;
+            z-index: 10;
+        }
+        
+        .vip-lock {
+            font-size: 36px;
+            margin-bottom: 8px;
+        }
+        
+        .vip-text {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 12px;
+        }
+        
+        .vip-btn {
+            padding: 10px 24px;
+            background: linear-gradient(135deg, #ff6b9d, #c44cff);
+            border: none;
+            border-radius: 20px;
+            color: #fff;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        
+        /* 底部导航栏 */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 70px;
+            background: rgba(10, 10, 26, 0.95);
+            backdrop-filter: blur(10px);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            z-index: 100;
+            padding-bottom: env(safe-area-inset-bottom, 0);
+        }
+        
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            text-decoration: none;
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 10px;
+            padding: 8px 16px;
+            transition: color 0.3s;
+        }
+        
+        .nav-item i {
+            font-size: 20px;
+        }
+        
+        .nav-item.active {
+            color: #ff6b9d;
+        }
+        
+        /* 加载状态 */
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: rgba(255, 255, 255, 0.5);
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: rgba(255, 255, 255, 0.4);
+        }
+        
+        .empty-state i {
+            font-size: 48px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 顶部栏 -->
+        <header class="header">
+            <h1 class="header-title">发现</h1>
+            <div class="header-right">
+                <div class="coin-display">
+                    <i class="fas fa-coins"></i>
+                    <span id="coinBalance">{{ current_user.coin_balance | int }}</span>
+                </div>
+                <a href="/messages" class="icon-btn">
+                    <i class="fas fa-bell"></i>
+                    <span class="badge" id="unreadBadge" style="display:none">0</span>
+                </a>
+            </div>
+        </header>
+        
+        <!-- 轮播Banner -->
+        <section class="banner-section">
+            <div class="banner-slider">
+                <div class="banner-slides" id="bannerSlides">
+                    <div class="banner-slide">
+                        <div class="banner-title">🎁 新人注册送50金币</div>
+                        <div class="banner-subtitle">立即领取，开启聊天之旅</div>
+                    </div>
+                    <div class="banner-slide">
+                        <div class="banner-title">💎 诚意会员畅聊无限</div>
+                        <div class="banner-subtitle">解锁附近的人，畅享无限沟通</div>
+                    </div>
+                    <div class="banner-slide">
+                        <div class="banner-title">📍 附近的人等你发现</div>
+                        <div class="banner-subtitle">发现身边的缘分</div>
+                    </div>
+                </div>
+                <div class="banner-dots">
+                    <span class="banner-dot active" data-index="0"></span>
+                    <span class="banner-dot" data-index="1"></span>
+                    <span class="banner-dot" data-index="2"></span>
+                </div>
+            </div>
+        </section>
+        
+        <!-- 在线用户横滑 -->
+        <section class="online-section">
+            <div class="section-header">
+                <i class="fas fa-circle text-pink" style="color:#2ecc71;font-size:8px"></i>
+                <span class="section-title">在线</span>
+            </div>
+            <div class="online-scroll" id="onlineScroll">
+                {% for user in online_users %}
+                <a href="/user/{{ user.id }}" class="online-item">
+                    <div class="online-avatar-wrap">
+                        <img src="{{ user.avatar }}" alt="{{ user.nickname }}" class="online-avatar">
+                        {% if user.is_online %}
+                        <span class="online-dot"></span>
+                        {% endif %}
+                    </div>
+                    <span class="online-name">{{ user.nickname }}</span>
+                </a>
+                {% endfor %}
+            </div>
+        </section>
+        
+        <!-- Tab按钮 -->
+        <section class="tab-section">
+            <div class="tab-buttons">
+                <button class="tab-btn active" data-tab="active" onclick="switchTab('active')">活跃用户</button>
+                <button class="tab-btn" data-tab="nearby" onclick="switchTab('nearby')">附近的人</button>
+            </div>
+        </section>
+        
+        <!-- 照片瀑布流 -->
+        <section class="masonry-section">
+            <div class="masonry-grid" id="userGrid">
+                {% for user in recommend_users %}
+                <div class="user-card" onclick="location.href='/user/{{ user.id }}'">
+                    <img src="{{ user.avatar }}" alt="{{ user.nickname }}" class="card-img">
+                    <div class="card-overlay">
+                        <div class="card-info">
+                            <span class="card-name">{{ user.nickname }}</span>
+                            {% if user.is_online %}
+                            <span class="card-online-dot"></span>
+                            {% endif %}
+                        </div>
+                        <div class="card-meta">{{ user.age }}·{{ user.city }}</div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            
+            <div id="nearbyContainer" style="display:none;">
+                <div class="masonry-grid" id="nearbyGrid"></div>
+                <div id="nearbyVipOverlay" class="vip-overlay" style="display:none;">
+                    <div class="vip-lock">🔒</div>
+                    <div class="vip-text">开通诚意会员查看附近的人</div>
+                    <a href="/vip" class="vip-btn">开通会员</a>
+                </div>
+            </div>
+            
+            <div class="loading" id="loading" style="display:none;">
+                <i class="fas fa-spinner fa-spin"></i> 加载中...
+            </div>
+        </section>
+    </div>
+    
+    <!-- 底部导航栏 -->
+    <nav class="bottom-nav">
+        <a href="/home" class="nav-item active">
+            <i class="fas fa-home"></i>
+            <span>首页</span>
+        </a>
+        <a href="/square" class="nav-item">
+            <i class="fas fa-th-large"></i>
+            <span>动态</span>
+        </a>
+        <a href="/messages" class="nav-item">
+            <i class="fas fa-comment-dots"></i>
+            <span>消息</span>
+        </a>
+        <a href="/profile" class="nav-item">
+            <i class="fas fa-user"></i>
+            <span>我的</span>
+        </a>
+    </nav>
+    
+    <script>
+        // Banner轮播
+        let currentBanner = 0;
+        const bannerSlides = document.getElementById('bannerSlides');
+        const bannerDots = document.querySelectorAll('.banner-dot');
+        const totalBanners = 3;
+        
+        function autoSlide() {
+            currentBanner = (currentBanner + 1) % totalBanners;
+            bannerSlides.style.transform = `translateX(-${currentBanner * 100}%)`;
+            bannerDots.forEach((dot, i) => {
+                dot.classList.toggle('active', i === currentBanner);
+            });
+        }
+        
+        setInterval(autoSlide, 3000);
+        
+        // Tab切换
+        let currentTab = 'active';
+        const userGrid = document.getElementById('userGrid');
+        const nearbyContainer = document.getElementById('nearbyContainer');
+        const nearbyGrid = document.getElementById('nearbyGrid');
+        const nearbyVipOverlay = document.getElementById('nearbyVipOverlay');
+        
+        function switchTab(tab) {
+            currentTab = tab;
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.tab === tab);
+            });
+            
+            if (tab === 'active') {
+                userGrid.style.display = 'block';
+                nearbyContainer.style.display = 'none';
+            } else {
+                userGrid.style.display = 'none';
+                nearbyContainer.style.display = 'block';
+                loadNearbyUsers();
+            }
+        }
+        
+        // 加载附近用户
+        async function loadNearbyUsers() {
+            const loading = document.getElementById('loading');
+            loading.style.display = 'block';
+            
+            try {
+                const resp = await fetch('/api/nearby');
+                const data = await resp.json();
+                
+                loading.style.display = 'none';
+                
+                if (data.need_vip) {
+                    // 非VIP，显示遮罩
+                    nearbyVipOverlay.style.display = 'flex';
+                    nearbyGrid.innerHTML = '';
+                } else if (data.success && data.users) {
+                    nearbyVipOverlay.style.display = 'none';
+                    renderNearbyUsers(data.users);
+                }
+            } catch (e) {
+                loading.style.display = 'none';
+                console.error('加载附近用户失败:', e);
+            }
+        }
+        
+        function renderNearbyUsers(users) {
+            nearbyGrid.innerHTML = users.map(user => `
+                <div class="user-card" onclick="location.href='/user/${user.id}'">
+                    <img src="${user.avatar}" alt="${user.nickname}" class="card-img">
+                    <div class="card-overlay">
+                        <div class="card-info">
+                            <span class="card-name">${user.nickname}</span>
+                            ${user.is_online ? '<span class="card-online-dot"></span>' : ''}
+                        </div>
+                        <div class="card-meta">${user.age}·${user.city}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        // 检查未读消息
+        async function checkUnread() {
+            try {
+                const resp = await fetch('/api/messages/unread-count');
+                const data = await resp.json();
+                const badge = document.getElementById('unreadBadge');
+                if (data.count > 0) {
+                    badge.style.display = 'flex';
+                    badge.textContent = data.count > 99 ? '99+' : data.count;
+                }
+            } catch (e) {
+                console.error('检查未读消息失败:', e);
+            }
+        }
+        
+        checkUnread();
+    </script>
+</body>
+</html>

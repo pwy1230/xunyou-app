@@ -1,0 +1,690 @@
+{% extends "base.html" %}
+
+{% block title %}寻尤 - 个人资料{% endblock %}
+
+{% block extra_css %}
+{{ super() }}
+<style>
+/* profile.html 样式 */
+.profile-page .profile-cover {
+    height: 200px;
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent-dark) 100%);
+    position: relative;
+}
+
+.profile-page .profile-avatar-section {
+    position: relative;
+    margin-top: -60px;
+    text-align: center;
+}
+
+.profile-page .profile-avatar {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    border: 4px solid var(--bg-primary);
+    overflow: hidden;
+    margin: 0 auto;
+    background: var(--bg-card);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.profile-page .profile-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.profile-page .edit-avatar-btn {
+    position: absolute;
+    bottom: 4px;
+    right: calc(50% - 46px);
+    width: 32px;
+    height: 32px;
+    background: var(--accent);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border: 2px solid var(--bg-primary);
+}
+
+.profile-page .profile-name {
+    font-size: 24px;
+    font-weight: 700;
+    margin: 12px 0 6px;
+}
+
+.profile-page .profile-gender {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 10px;
+    background: var(--bg-card);
+    border-radius: 12px;
+    font-size: 12px;
+    margin-left: 8px;
+}
+
+.profile-page .profile-bio {
+    font-size: 14px;
+    color: var(--text-secondary);
+    margin: 8px 20px 20px;
+}
+
+.profile-page .profile-stats {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    padding: 16px;
+    background: var(--bg-card);
+    border-radius: var(--radius);
+    margin: 0 16px 20px;
+}
+
+.profile-page .profile-stat {
+    text-align: center;
+}
+
+.profile-page .profile-stat-value {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--accent);
+}
+
+.profile-page .profile-stat-label {
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.profile-page .info-section {
+    background: var(--bg-card);
+    border-radius: var(--radius);
+    margin: 0 16px 16px;
+    overflow: hidden;
+}
+
+.profile-page .info-item {
+    display: flex;
+    align-items: center;
+    padding: 14px 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+.profile-page .info-item:last-child {
+    border-bottom: none;
+}
+
+.profile-page .info-item i {
+    width: 24px;
+    color: var(--accent);
+    margin-right: 12px;
+}
+
+.profile-page .info-item span {
+    color: var(--text-secondary);
+    font-size: 14px;
+}
+
+.profile-page .info-item .value {
+    flex: 1;
+    text-align: right;
+    color: var(--text-primary);
+}
+
+.profile-page .profile-actions {
+    padding: 16px;
+    display: flex;
+    gap: 12px;
+}
+
+.profile-page .profile-actions .btn {
+    flex: 1;
+}
+
+.profile-page .tags-section {
+    padding: 16px;
+}
+
+.profile-page .tags-section h4 {
+    font-size: 14px;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+}
+
+.profile-page .tags-section .tag {
+    display: inline-block;
+    padding: 6px 14px;
+    background: rgba(233, 30, 99, 0.12);
+    border-radius: 16px;
+    font-size: 13px;
+    color: var(--accent-light);
+    margin: 0 6px 8px 0;
+}
+
+.visitor-section, .follow-section {
+    padding: 16px;
+}
+
+.visitor-section h4, .follow-section h4 {
+    font-size: 16px;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.visitor-item, .follow-item {
+    display: flex;
+    align-items: center;
+    padding: 12px;
+    background: var(--bg-card);
+    border-radius: var(--radius);
+    margin-bottom: 10px;
+    cursor: pointer;
+}
+
+.visitor-avatar, .follow-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    overflow: hidden;
+    margin-right: 12px;
+}
+
+.visitor-avatar img, .follow-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.visitor-info, .follow-info {
+    flex: 1;
+}
+
+.visitor-name, .follow-name {
+    font-weight: 600;
+    margin-bottom: 2px;
+}
+
+.visitor-time, .follow-time {
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+/* 照片墙样式 */
+.photo-wall-section {
+    padding: 16px;
+}
+.photo-wall-section h4 {
+    font-size: 14px;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+}
+.photo-wall-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 4px;
+}
+.photo-wall-item {
+    aspect-ratio: 1;
+    overflow: hidden;
+    border-radius: 6px;
+    cursor: pointer;
+    background: var(--bg-card);
+}
+.photo-wall-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.2s;
+}
+.photo-wall-item:active img {
+    transform: scale(0.95);
+}
+.photo-empty {
+    grid-column: span 3;
+    text-align: center;
+    padding: 20px;
+    color: var(--text-muted);
+    font-size: 13px;
+}
+.photo-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.95);
+    z-index: 9999;
+    display: none;
+    align-items: center;
+    justify-content: center;
+}
+.photo-modal.active {
+    display: flex;
+}
+.photo-modal img {
+    max-width: 95%;
+    max-height: 95%;
+    object-fit: contain;
+}
+.photo-modal-close {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    width: 40px;
+    height: 40px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #fff;
+    font-size: 20px;
+}
+
+.edit-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.8);
+    z-index: 2000;
+    display: none;
+}
+
+.edit-modal.active {
+    display: block;
+}
+
+.edit-modal-content {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 90%;
+    max-width: 400px;
+    background: var(--bg-card);
+    border-radius: var(--radius);
+    padding: 24px;
+}
+
+.edit-modal-content h3 {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+        /* profile.html - 粉紫主题 */
+    
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="page-container profile-page">
+    <div class="header">
+        <div class="header-back" onclick="history.back()">
+            <i class="fas fa-arrow-left"></i>
+        </div>
+        <div class="header-title">{{ user.nickname }}</div>
+        <div style="width:40px;"></div>
+    </div>
+    
+    <div class="main-content">
+        <div class="profile-cover"></div>
+        
+        <div class="profile-avatar-section">
+            <div class="profile-avatar">
+                {% if user.avatar %}
+                <img src="{{ user.avatar }}" alt="{{ user.nickname }}">
+                {% else %}
+                <i class="fas fa-user" style="font-size:48px;color:var(--text-muted);"></i>
+                {% endif %}
+            </div>
+            
+            <div class="profile-name">
+                {{ user.nickname }}
+                <span class="profile-gender">
+                    <i class="fas fa-{{ 'mars' if user.gender == 'male' else 'venus' }}"></i>
+                    {{ '男' if user.gender == 'male' else '女' }}
+                </span>
+            </div>
+            
+            <div class="profile-bio">{{ user.bio or '这个人很懒，什么都没写' }}</div>
+        </div>
+        
+        <div class="profile-stats">
+            <div class="profile-stat">
+                <div class="profile-stat-value">{{ user.age }}</div>
+                <div class="profile-stat-label">年龄</div>
+            </div>
+            <div class="profile-stat">
+                <div class="profile-stat-value">{{ user.city or '-' }}</div>
+                <div class="profile-stat-label">城市</div>
+            </div>
+            <div class="profile-stat">
+                <div class="profile-stat-value">{{ user.coin_balance | int }}</div>
+                <div class="profile-stat-label">{{ '金币' if user.gender == 'male' else '收益' }}</div>
+            </div>
+        </div>
+        
+        {# 个人详情区域 - 仅查看他人主页时显示 #}
+        {% if not is_self and (user.height or user.occupation or user.looking_for or user.city or user.interests) %}
+        <div class="info-section">
+            {% if user.height %}
+            <div class="info-item">
+                <i class="fas fa-ruler-vertical"></i>
+                <span>身高</span>
+                <div class="value">{{ user.height }} cm</div>
+            </div>
+            {% endif %}
+            {% if user.occupation %}
+            <div class="info-item">
+                <i class="fas fa-briefcase"></i>
+                <span>职业</span>
+                <div class="value">{{ user.occupation }}</div>
+            </div>
+            {% endif %}
+            {% if user.looking_for %}
+            <div class="info-item">
+                <i class="fas fa-heart"></i>
+                <span>想找什么</span>
+                <div class="value">{{ user.looking_for }}</div>
+            </div>
+            {% endif %}
+            {% if user.city %}
+            <div class="info-item">
+                <i class="fas fa-map-marker-alt"></i>
+                <span>城市</span>
+                <div class="value">{{ user.city }}</div>
+            </div>
+            {% endif %}
+            {% if user.interests %}
+            <div class="info-item">
+                <i class="fas fa-star"></i>
+                <span>爱好</span>
+                <div class="value">{{ user.interests }}</div>
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+        
+        {% if user.get_interest_tags() %}
+        <div class="tags-section">
+            <h4>兴趣标签</h4>
+            <div class="tags">
+                {% for tag in user.get_interest_tags() %}
+                <span class="tag">{{ tag }}</span>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+        
+        {# 照片墙 - 仅在看别人资料时显示 #}
+        {% if not is_self %}
+        <div class="photo-wall-section" id="photoWallSection">
+            <h4>照片墙</h4>
+            <div class="photo-wall-grid" id="photoWallGrid">
+                <div class="loading" style="grid-column:span 3;"><div class="loading-spinner"></div></div>
+            </div>
+        </div>
+        {% endif %}
+        
+        {% if is_self %}
+        <!-- 签到卡片 -->
+        <div class="signin-card" id="signinCard" style="margin:0 16px 16px;background:linear-gradient(135deg,rgba(255,107,157,0.15),rgba(196,77,255,0.15));border:1px solid rgba(255,107,157,0.3);border-radius:12px;padding:16px;text-align:center;">
+            <div style="font-size:16px;font-weight:600;margin-bottom:8px;">每日签到领金币</div>
+            <div id="signinDays" style="display:flex;justify-content:center;gap:8px;margin-bottom:12px;">
+                <div class="sday" data-day="1" style="width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--text-muted);">1</div>
+                <div class="sday" data-day="2" style="width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--text-muted);">2</div>
+                <div class="sday" data-day="3" style="width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--text-muted);">3</div>
+                <div class="sday" data-day="4" style="width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--text-muted);">4</div>
+                <div class="sday" data-day="5" style="width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--text-muted);">5</div>
+                <div class="sday" data-day="6" style="width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--text-muted);">6</div>
+                <div class="sday" data-day="7" style="width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--text-muted);">7</div>
+            </div>
+            <button id="signinBtn" onclick="doSignin()" style="background:linear-gradient(135deg,#ff6b9d,#c44dff);color:#fff;border:none;padding:10px 32px;border-radius:20px;font-size:15px;font-weight:600;cursor:pointer;">签到领金币</button>
+            <div id="signinReward" style="font-size:12px;color:var(--text-muted);margin-top:8px;">连续签到7天可获得35金币</div>
+        </div>
+
+        <div class="info-section">
+            <div class="info-item" onclick="location.href='/profile/edit'">
+                <i class="fas fa-edit"></i>
+                <span>编辑资料</span>
+                <div class="value"><i class="fas fa-chevron-right"></i></div>
+            </div>
+            <div class="info-item" onclick="location.href='/vip'">
+                <i class="fas fa-crown"></i>
+                <span>会员中心</span>
+                <div class="value" style="color:#ffc107;">{% if user.vip_type and user.vip_type > 0 %}已开通{% else %}未开通{% endif %}<i class="fas fa-chevron-right" style="margin-left:8px;"></i></div>
+            </div>
+            <div class="info-item" onclick="location.href='/wallet'">
+                <i class="fas fa-coins"></i>
+                <span>我的钱包</span>
+                <div class="value">{{ user.coin_balance | int }} 金币<i class="fas fa-chevron-right" style="margin-left:8px;"></i></div>
+            </div>
+            <div class="info-item" onclick="location.href='/visitors'">
+                <i class="fas fa-eye"></i>
+                <span>谁看过我</span>
+                <div class="value"><i class="fas fa-chevron-right"></i></div>
+            </div>
+            <div class="info-item" onclick="location.href='/settings'">
+                <i class="fas fa-cog"></i>
+                <span>设置</span>
+                <div class="value"><i class="fas fa-chevron-right"></i></div>
+            </div>
+            <div class="info-item" onclick="location.href='/logout'" style="border-top:1px solid rgba(255,255,255,0.1);margin-top:8px;">
+                <i class="fas fa-sign-out-alt" style="color:#ff4757;"></i>
+                <span style="color:#ff4757;">退出登录</span>
+                <div class="value"><i class="fas fa-chevron-right"></i></div>
+            </div>
+        </div>
+        {% else %}
+        <div class="profile-actions">
+            <button class="btn btn-secondary" onclick="startChat({{ user.id }})">
+                <i class="fas fa-comment"></i> 聊天
+            </button>
+            <button class="btn btn-primary" id="followBtn" onclick="toggleFollow({{ user.id }})">
+                <i class="fas fa-plus"></i> 关注
+            </button>
+        </div>
+        
+        {% if user.gender == 'female' %}
+        <div class="info-section">
+            <div class="info-item">
+                <i class="fas fa-comment-dollar"></i>
+                <span>聊天价格</span>
+                <div class="value" style="color:var(--accent);">{{ user.chat_price }} 金币/条</div>
+            </div>
+        </div>
+        {% endif %}
+        {% endif %}
+        
+        {% if is_self %}
+        <div class="visitor-section" id="visitorSection" style="display:none;">
+            <h4>最近访客</h4>
+            <div id="visitorList">
+                <div class="loading"><div class="loading-spinner"></div></div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    
+    {% if is_self %}
+    {% include 'tabbar.html' %}
+    {% endif %}
+</div>
+
+{# 照片查看模态框 #}
+<div class="photo-modal" id="photoModal" onclick="closePhotoModal()">
+    <div class="photo-modal-close"><i class="fas fa-times"></i></div>
+    <img id="photoModalImg" src="" alt="">
+</div>
+
+<script>
+// 签到功能
+async function loadSigninStatus() {
+    try {
+        const res = await api('/api/signin/status');
+        if (res.success) updateSigninUI(res);
+    } catch(e) { console.log('签到状态加载失败', e); }
+}
+
+function updateSigninUI(data) {
+    const days = document.querySelectorAll('.sday');
+    const btn = document.getElementById('signinBtn');
+    const reward = document.getElementById('signinReward');
+    if (!days.length) return;
+    const consecutive = data.consecutive_days || 0;
+    const signedToday = data.signed_today || false;
+    days.forEach(d => {
+        const dayNum = parseInt(d.dataset.day);
+        d.style.background = 'rgba(255,255,255,0.1)';
+        d.style.color = 'var(--text-muted)';
+        d.style.border = 'none';
+        if (dayNum <= consecutive) {
+            d.style.background = 'linear-gradient(135deg,#ff6b9d,#c44dff)';
+            d.style.color = '#fff';
+        }
+        if (dayNum === consecutive + 1 && !signedToday) {
+            d.style.border = '2px solid #ff6b9d';
+        }
+    });
+    if (signedToday) {
+        btn.disabled = true;
+        btn.textContent = '今日已签到';
+        btn.style.opacity = '0.5';
+        reward.textContent = '连续签到' + consecutive + '天，明日继续加油！';
+    }
+}
+
+async function doSignin() {
+    const btn = document.getElementById('signinBtn');
+    btn.disabled = true; btn.textContent = '签到中...';
+    try {
+        const res = await api('/api/signin', { method: 'POST' });
+        if (res.success) {
+            showToast('签到成功！获得' + res.coins_earned + '金币');
+            updateSigninUI({ signed_today: true, consecutive_days: res.consecutive_days });
+        } else {
+            showToast(res.message || '已签到', 'error');
+            btn.disabled = false; btn.textContent = '签到领金币';
+        }
+    } catch(e) {
+        showToast('签到失败', 'error');
+        btn.disabled = false; btn.textContent = '签到领金币';
+    }
+}
+
+async function loadVisitors() {
+    const response = await api('/api/visitors');
+    const container = document.getElementById('visitorList');
+    const section = document.getElementById('visitorSection');
+    
+    if (response.success && response.visitors.length > 0) {
+        section.style.display = 'block';
+        container.innerHTML = response.visitors.slice(0, 5).map(v => `
+            <div class="visitor-item" onclick="location.href='/user/${v.visitor.id}'">
+                <div class="visitor-avatar">
+                    ${v.visitor.avatar 
+                        ? `<img src="${v.visitor.avatar}" alt="">`
+                        : `<div style="width:100%;height:100%;background:var(--bg-input);display:flex;align-items:center;justify-content:center;"><i class="fas fa-user"></i></div>`
+                    }
+                </div>
+                <div class="visitor-info">
+                    <div class="visitor-name">${v.visitor.nickname}</div>
+                    <div class="visitor-time">${timeAgo(v.visited_at)} 看过你</div>
+                </div>
+            </div>
+        `).join('');
+    }
+}
+
+async function toggleFollow(userId) {
+    const response = await api(`/api/user/${userId}/follow`, { method: 'POST' });
+    if (response.success) {
+        const btn = document.getElementById('followBtn');
+        if (response.followed) {
+            btn.innerHTML = '<i class="fas fa-check"></i> 已关注';
+            btn.classList.remove('btn-primary');
+            btn.classList.add('btn-secondary');
+        } else {
+            btn.innerHTML = '<i class="fas fa-plus"></i> 关注';
+            btn.classList.remove('btn-secondary');
+            btn.classList.add('btn-primary');
+        }
+    }
+}
+
+async function checkFollowStatus(userId) {
+    const response = await api(`/api/user/${userId}/is-following`);
+    if (response.success && response.is_following) {
+        const btn = document.getElementById('followBtn');
+        btn.innerHTML = '<i class="fas fa-check"></i> 已关注';
+        btn.classList.remove('btn-primary');
+        btn.classList.add('btn-secondary');
+    }
+}
+
+function startChat(userId) {
+    location.href = `/chat/${userId}`;
+}
+
+// 非本人页面加载时检查关注状态
+{% if not is_self %}
+document.addEventListener('DOMContentLoaded', () => checkFollowStatus({{ user.id }}));
+{% else %}
+document.addEventListener('DOMContentLoaded', () => {
+    loadSigninStatus();
+    loadVisitors();
+});
+{% endif %}
+
+// 照片墙功能
+let userPhotos = [];
+try {
+    var rawPhotos = {{ user.get_photos() | tojson }};
+    if (Array.isArray(rawPhotos) && rawPhotos.length > 0) {
+        userPhotos = rawPhotos;
+    }
+} catch(e) {
+    console.log('照片墙数据解析失败:', e);
+    userPhotos = [];
+}
+function initPhotoWall() {
+    const grid = document.getElementById('photoWallGrid');
+    if (!grid) return;
+    
+    if (!userPhotos || userPhotos.length === 0) {
+        grid.innerHTML = '<div class="photo-empty">暂无照片，快去上传吧~</div>';
+        return;
+    }
+    
+    grid.innerHTML = userPhotos.map(photo => `
+        <div class="photo-wall-item" onclick="showPhoto('${photo}')">
+            <img src="${photo}" alt="" onerror="this.style.display='none'">
+        </div>
+    `).join('');
+}
+
+function showPhoto(src) {
+    const modal = document.getElementById('photoModal');
+    const img = document.getElementById('photoModalImg');
+    img.src = src;
+    modal.classList.add('active');
+}
+
+function closePhotoModal() {
+    const modal = document.getElementById('photoModal');
+    modal.classList.remove('active');
+}
+
+// 初始化照片墙
+initPhotoWall();
+</script>
+{% endblock %}

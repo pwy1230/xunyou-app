@@ -1,0 +1,222 @@
+{% extends "base.html" %}
+
+{% block title %}寻尤 - 编辑资料{% endblock %}
+
+{% block extra_css %}
+{{ super() }}
+<style>
+.edit-page {
+    padding: 16px;
+}
+.edit-page .form-group {
+    margin-bottom: 16px;
+}
+.edit-page .form-label {
+    display: block;
+    font-size: 14px;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+}
+.edit-page .form-input {
+    width: 100%;
+    padding: 12px 16px;
+    background: var(--bg-input);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: var(--radius);
+    color: var(--text-primary);
+    font-size: 15px;
+    box-sizing: border-box;
+}
+.edit-page .form-input:focus {
+    outline: none;
+    border-color: var(--accent);
+}
+.edit-page textarea.form-input {
+    min-height: 100px;
+    resize: vertical;
+}
+.edit-page .tag-select {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+.edit-page .tag-option {
+    padding: 8px 16px;
+    background: var(--bg-card);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 20px;
+    font-size: 14px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.edit-page .tag-option.selected {
+    background: rgba(233, 30, 99, 0.2);
+    border-color: var(--accent);
+    color: var(--accent);
+}
+.edit-page .btn-save {
+    width: 100%;
+    padding: 14px;
+    background: linear-gradient(135deg, #ff6b9d, #c44dff);
+    border: none;
+    border-radius: 25px;
+    color: #fff;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 20px;
+}
+.edit-page .btn-save:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+.interest-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 8px;
+}
+.interest-tag {
+    padding: 6px 12px;
+    background: rgba(233, 30, 99, 0.12);
+    border-radius: 14px;
+    font-size: 13px;
+    color: var(--accent-light);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.interest-tag:hover {
+    background: rgba(233, 30, 99, 0.25);
+}
+.interest-tag.selected {
+    background: var(--accent);
+    color: #fff;
+}
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="page-container">
+    <div class="header">
+        <div class="header-back" onclick="history.back()">
+            <i class="fas fa-arrow-left"></i>
+        </div>
+        <div class="header-title">编辑资料</div>
+        <div style="width:40px;"></div>
+    </div>
+    
+    <div class="main-content edit-page">
+        <div class="form-group">
+            <label class="form-label">昵称</label>
+            <input type="text" class="form-input" id="nickname" value="{{ user.nickname }}" maxlength="20">
+        </div>
+        
+        <div class="form-group">
+            <label class="form-label">身高 (cm)</label>
+            <input type="number" class="form-input" id="height" value="{{ user.height or '' }}" placeholder="例如: 165" min="140" max="200">
+        </div>
+        
+        <div class="form-group">
+            <label class="form-label">职业</label>
+            <input type="text" class="form-input" id="occupation" value="{{ user.occupation or '' }}" placeholder="例如: 设计师" maxlength="30">
+        </div>
+        
+        <div class="form-group">
+            <label class="form-label">城市</label>
+            <input type="text" class="form-input" id="city" value="{{ user.city or '' }}" placeholder="例如: 北京" maxlength="20">
+        </div>
+        
+        <div class="form-group">
+            <label class="form-label">个人简介</label>
+            <textarea class="form-input" id="bio" placeholder="介绍一下自己吧~" maxlength="200">{{ user.bio or '' }}</textarea>
+        </div>
+        
+        <div class="form-group">
+            <label class="form-label">想找什么样的TA</label>
+            <textarea class="form-input" id="looking_for" placeholder="例如: 找一个志同道合的他一起变好" maxlength="200">{{ user.looking_for or '' }}</textarea>
+        </div>
+        
+        <div class="form-group">
+            <label class="form-label">兴趣标签 (点击选择)</label>
+            <div class="interest-tags" id="interestTags">
+                <span class="interest-tag" data-tag="拍照">拍照</span>
+                <span class="interest-tag" data-tag="旅行">旅行</span>
+                <span class="interest-tag" data-tag="美食">美食</span>
+                <span class="interest-tag" data-tag="健身">健身</span>
+                <span class="interest-tag" data-tag="音乐">音乐</span>
+                <span class="interest-tag" data-tag="电影">电影</span>
+                <span class="interest-tag" data-tag="阅读">阅读</span>
+                <span class="interest-tag" data-tag="游戏">游戏</span>
+                <span class="interest-tag" data-tag="绘画">绘画</span>
+                <span class="interest-tag" data-tag="瑜伽">瑜伽</span>
+                <span class="interest-tag" data-tag="跑步">跑步</span>
+                <span class="interest-tag" data-tag="游泳">游泳</span>
+                <span class="interest-tag" data-tag="舞蹈">舞蹈</span>
+                <span class="interest-tag" data-tag="烘焙">烘焙</span>
+                <span class="interest-tag" data-tag="咖啡">咖啡</span>
+                <span class="interest-tag" data-tag="追剧">追剧</span>
+                <span class="interest-tag" data-tag="穿搭">穿搭</span>
+                <span class="interest-tag" data-tag="宠物">宠物</span>
+                <span class="interest-tag" data-tag="汉服">汉服</span>
+                <span class="interest-tag" data-tag="电竞">电竞</span>
+            </div>
+        </div>
+        
+        <button class="btn-save" id="saveBtn" onclick="saveProfile()">保存修改</button>
+    </div>
+    
+    {% include 'tabbar.html' %}
+</div>
+
+<script>
+// 初始化兴趣标签
+const currentInterests = {{ user.get_interest_tags() | tojson }};
+document.querySelectorAll('.interest-tag').forEach(tag => {
+    if (currentInterests.includes(tag.dataset.tag)) {
+        tag.classList.add('selected');
+    }
+    tag.addEventListener('click', () => {
+        tag.classList.toggle('selected');
+    });
+});
+
+async function saveProfile() {
+    const btn = document.getElementById('saveBtn');
+    btn.disabled = true;
+    btn.textContent = '保存中...';
+    
+    const selectedTags = Array.from(document.querySelectorAll('.interest-tag.selected'))
+        .map(t => t.dataset.tag);
+    
+    const data = {
+        nickname: document.getElementById('nickname').value.trim(),
+        height: parseInt(document.getElementById('height').value) || 0,
+        occupation: document.getElementById('occupation').value.trim(),
+        city: document.getElementById('city').value.trim(),
+        bio: document.getElementById('bio').value.trim(),
+        looking_for: document.getElementById('looking_for').value.trim(),
+        interests: JSON.stringify(selectedTags)
+    };
+    
+    try {
+        const res = await api('/api/profile', {
+            method: 'POST',
+            body: JSON.stringify(data)
+        });
+        if (res.success) {
+            showToast('资料更新成功');
+            setTimeout(() => history.back(), 1000);
+        } else {
+            showToast(res.message || '保存失败', 'error');
+            btn.disabled = false;
+            btn.textContent = '保存修改';
+        }
+    } catch(e) {
+        showToast('保存失败', 'error');
+        btn.disabled = false;
+        btn.textContent = '保存修改';
+    }
+}
+</script>
+{% endblock %}

@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#0a0a1a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>{% block title %}寻尤{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=20260508b">
+    <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    {% block extra_css %}
+    <style>
+        /* 全局背景光晕效果 */
+        body { position: relative; }
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: 
+                radial-gradient(ellipse at top left, rgba(196,77,255,0.08) 0%, transparent 50%),
+                radial-gradient(ellipse at bottom right, rgba(255,107,157,0.06) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: -1;
+        }
+        
+        /* 统一卡片毛玻璃效果 */
+        .user-card, .chat-item, .menu-item, .package-card, .profile-card, .post-card,
+        .visitor-card, .settings-group, .balance-card, .transaction-item {
+            background: rgba(255,255,255,0.06);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .user-card:hover, .chat-item:hover, .menu-item:hover, .package-card:hover,
+        .profile-card:hover, .post-card:hover, .visitor-card:hover {
+            border-color: rgba(255,255,255,0.2);
+        }
+        
+        /* 导航栏微光 */
+        .tab-bar {
+            box-shadow: 0 -1px 20px rgba(255,107,157,0.08);
+        }
+        
+        /* 按钮微发光 */
+        .greet-btn, .fab, .action-btn, .balance-btn, .chat-send-btn {
+            box-shadow: 0 4px 15px rgba(255,107,157,0.25);
+        }
+    </style>
+    {% endblock %}
+</head>
+<body>
+    {% block body %}{% endblock %}
+    
+    <!-- 星空背景 -->
+    <div class="starfield" id="starfield"></div>
+    
+    <script src="https://cdn.bootcdn.net/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
+    <script>
+        // 全局配置
+        const API_BASE = '';
+        
+        // Socket连接
+        var socket = null;
+        try {
+            socket = io();
+        } catch(e) {
+            console.warn('SocketIO not available');
+        }
+        
+        // 全局时间格式化
+        function timeAgo(dateStr) {
+            if (!dateStr) return '';
+            var now = new Date();
+            var date = new Date(dateStr);
+            var diff = Math.floor((now - date) / 1000);
+            if (diff < 60) return '刚刚';
+            if (diff < 3600) return Math.floor(diff / 60) + '分钟前';
+            if (diff < 86400) return Math.floor(diff / 3600) + '小时前';
+            if (diff < 2592000) return Math.floor(diff / 86400) + '天前';
+            return dateStr.substring(0, 10);
+        }
+        
+        // Toast提示
+        function showToast(message, type = 'success') {
+            const existing = document.querySelector('.toast');
+            if (existing) existing.remove();
+            
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => toast.remove(), 3000);
+        }
+        
+        // API请求（带401处理）
+        async function api(url, options = {}) {
+            try {
+                const response = await fetch(API_BASE + url, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...options.headers
+                    },
+                    ...options
+                });
+                
+                // 处理401未授权
+                if (response.status === 401) {
+                    window.location.href = '/login';
+                    return { success: false, error: '请先登录' };
+                }
+                
+                return await response.json();
+            } catch (error) {
+                console.error('API Error:', error);
+                return { success: false, message: '网络错误' };
+            }
+        }
+        
+        // 加载状态
+        function showLoading() {
+            const overlay = document.createElement('div');
+            overlay.className = 'loading-overlay';
+            overlay.id = 'loadingOverlay';
+            overlay.innerHTML = '<div class="loading-spinner"></div>';
+            document.body.appendChild(overlay);
+        }
+        
+        function hideLoading() {
+            const overlay = document.getElementById('loadingOverlay');
+            if (overlay) overlay.remove();
+        }
+        
+        // 生成星星背景
+        function generateStars() {
+            const container = document.getElementById('starfield');
+            if (!container) return;
+            
+            // 移除旧的星星
+            const oldStars = container.querySelectorAll('.star');
+            oldStars.forEach(s => s.remove());
+            
+            // 创建新的星星
+            for (let i = 0; i < 50; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.style.cssText = `
+                    position: absolute;
+                    width: ${Math.random() * 3 + 1}px;
+                    height: ${Math.random() * 3 + 1}px;
+                    background: white;
+                    border-radius: 50%;
+                    left: ${Math.random() * 100}%;
+                    top: ${Math.random() * 100}%;
+                    opacity: ${Math.random() * 0.5 + 0.3};
+                    animation: twinkle ${Math.random() * 3 + 2}s ease-in-out infinite;
+                    animation-delay: ${Math.random() * 2}s;
+                `;
+                container.appendChild(star);
+            }
+        }
+        
+        // 页面加载完成后生成星星
+        document.addEventListener('DOMContentLoaded', generateStars);
+        
+        // 点击反馈
+        document.addEventListener('touchstart', function(e) {
+            const target = e.target.closest('.action-btn, .tab-item, .btn-login, .gender-option');
+            if (target) {
+                target.style.transform = 'scale(0.95)';
+            }
+        }, { passive: true });
+        
+        document.addEventListener('touchend', function(e) {
+            const target = e.target.closest('.action-btn, .tab-item, .btn-login, .gender-option');
+            if (target) {
+                target.style.transform = '';
+            }
+        }, { passive: true });
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

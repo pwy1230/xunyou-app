@@ -1,0 +1,569 @@
+{% extends "base.html" %}
+
+{% block title %}寻尤 - 我的钱包{% endblock %}
+
+{% block extra_css %}
+<style>
+.wallet-page .balance-card {
+    background: var(--gradient);
+    border-radius: var(--radius);
+    padding: 30px;
+    text-align: center;
+    margin: 16px;
+    position: relative;
+    overflow: hidden;
+}
+
+.wallet-page .balance-card::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 60%);
+    animation: shimmer 3s infinite;
+}
+
+@keyframes shimmer {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.wallet-page .balance-label {
+    font-size: 14px;
+    opacity: 0.9;
+    margin-bottom: 8px;
+}
+
+.wallet-page .balance-amount {
+    font-size: 48px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.wallet-page .balance-amount span {
+    font-size: 20px;
+    opacity: 0.8;
+}
+
+.wallet-page .balance-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 20px;
+    position: relative;
+}
+
+.wallet-page .balance-actions .btn {
+    flex: 1;
+    background: rgba(255,255,255,0.2);
+    backdrop-filter: blur(10px);
+}
+
+.wallet-page .balance-actions .btn:first-child {
+    background: rgba(255,255,255,0.3);
+}
+
+.wallet-page .section-title {
+    font-size: 16px;
+    font-weight: 600;
+    padding: 16px 16px 12px;
+}
+
+.wallet-page .recharge-packages {
+    padding: 0 16px;
+}
+
+.wallet-page .package-card {
+    background: var(--bg-card);
+    border-radius: var(--radius);
+    padding: 16px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: all 0.2s;
+}
+
+.wallet-page .package-card:hover {
+    border-color: rgba(233, 30, 99, 0.3);
+}
+
+.wallet-page .package-card.selected {
+    border-color: var(--accent);
+    background: rgba(233, 30, 99, 0.1);
+}
+
+.wallet-page .package-info h4 {
+    font-size: 15px;
+    margin-bottom: 4px;
+}
+
+.wallet-page .package-info p {
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.wallet-page .package-price {
+    text-align: right;
+}
+
+.wallet-page .package-price .amount {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--accent);
+}
+
+.wallet-page .package-price .yuan {
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.wallet-page .package-price .coins {
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
+.wallet-page .recharge-btn {
+    margin: 20px 16px;
+}
+
+.wallet-page .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    padding: 0 16px;
+}
+
+.wallet-page .stat-card {
+    background: var(--bg-card);
+    border-radius: var(--radius);
+    padding: 16px;
+    text-align: center;
+}
+
+.wallet-page .stat-value {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--accent);
+    margin-bottom: 4px;
+}
+
+.wallet-page .stat-label {
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.wallet-page .transaction-list {
+    padding: 0 16px;
+}
+
+.wallet-page .transaction-item {
+    display: flex;
+    align-items: center;
+    padding: 14px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+.wallet-page .transaction-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 12px;
+}
+
+.wallet-page .transaction-icon.recharge {
+    background: rgba(76, 175, 80, 0.2);
+    color: #4caf50;
+}
+
+.wallet-page .transaction-icon.consume {
+    background: rgba(244, 67, 54, 0.2);
+    color: #f44336;
+}
+
+.wallet-page .transaction-icon.income {
+    background: rgba(233, 30, 99, 0.2);
+    color: var(--accent);
+}
+
+.wallet-page .transaction-icon.withdraw {
+    background: rgba(255, 152, 0, 0.2);
+    color: #ff9800;
+}
+
+.wallet-page .transaction-info {
+    flex: 1;
+}
+
+.wallet-page .transaction-type {
+    font-weight: 500;
+    margin-bottom: 2px;
+}
+
+.wallet-page .transaction-desc {
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.wallet-page .transaction-amount {
+    font-weight: 600;
+}
+
+.wallet-page .transaction-amount.positive {
+    color: #4caf50;
+}
+
+.wallet-page .transaction-amount.negative {
+    color: #f44336;
+}
+
+.wallet-page .withdraw-form {
+    padding: 16px;
+}
+
+.wallet-page .withdraw-info {
+    background: var(--bg-card);
+    border-radius: var(--radius);
+    padding: 16px;
+    margin-bottom: 16px;
+    font-size: 13px;
+    color: var(--text-muted);
+}
+
+.wallet-page .withdraw-info p {
+    margin-bottom: 6px;
+}
+
+.wallet-tabs {
+    display: flex;
+    padding: 0 16px;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.wallet-tab {
+    padding: 8px 0;
+    font-size: 15px;
+    color: var(--text-muted);
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+}
+
+.wallet-tab.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+        /* wallet.html - 金橙主题 */
+        .balance-card {
+            background: linear-gradient(135deg, #ffc107, #ff9800) !important;
+        }
+        .section-title i {
+            background: linear-gradient(135deg, #ffc107, #ff9800);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .package-card.selected {
+            border-color: #ffc107;
+            background: rgba(255,193,7,0.1);
+        }
+        .header-title {
+            background: linear-gradient(135deg, #ffc107, #ff9800);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+    
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="page-container wallet-page">
+    <div class="header">
+        <div class="header-back" onclick="history.back()">
+            <i class="fas fa-arrow-left"></i>
+        </div>
+        <div class="header-title">我的钱包</div>
+        <div style="width:40px;"></div>
+    </div>
+    
+    <div class="main-content">
+        <div class="balance-card">
+            <div class="balance-label">账户余额</div>
+            <div class="balance-amount">
+                <span id="balanceAmount">{{ current_user.coin_balance | int }}</span>
+                <span>金币</span>
+            </div>
+            <div class="balance-actions">
+                <button class="btn" onclick="switchTab('recharge')">
+                    <i class="fas fa-plus"></i> 充值
+                </button>
+                <button class="btn" onclick="switchTab('withdraw')" {% if current_user.gender != 'female' %}disabled style="opacity:0.5"{% endif %}>
+                    <i class="fas fa-arrow-up"></i> 提现
+                </button>
+            </div>
+        </div>
+        
+        <div class="stats-grid" id="statsGrid">
+            <div class="stat-card">
+                <div class="stat-value" id="statRecharge">0</div>
+                <div class="stat-label">累计充值</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="statConsume">0</div>
+                <div class="stat-label">累计消费</div>
+            </div>
+            {% if current_user.gender == 'female' %}
+            <div class="stat-card">
+                <div class="stat-value" id="statIncome">0</div>
+                <div class="stat-label">累计收益</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="statMessages">0</div>
+                <div class="stat-label">收到消息</div>
+            </div>
+            {% endif %}
+        </div>
+        
+        <div class="wallet-tabs">
+            <div class="wallet-tab active" data-tab="records">交易记录</div>
+            <div class="wallet-tab" data-tab="recharge">充值</div>
+            {% if current_user.gender == 'female' %}
+            <div class="wallet-tab" data-tab="withdraw">提现</div>
+            {% endif %}
+        </div>
+        
+        <!-- 交易记录 -->
+        <div class="tab-content active" id="tab-records">
+            <div class="transaction-list" id="transactionList">
+                <div class="loading"><div class="loading-spinner"></div></div>
+            </div>
+        </div>
+        
+        <!-- 充值 -->
+        <div class="tab-content" id="tab-recharge">
+            <div class="recharge-packages" id="rechargePackages">
+                <!-- 动态加载 -->
+            </div>
+            <button class="btn btn-primary btn-block recharge-btn" id="rechargeBtn" onclick="doRecharge()">
+                立即充值
+            </button>
+        </div>
+        
+        <!-- 提现 -->
+        {% if current_user.gender == 'female' %}
+        <div class="tab-content" id="tab-withdraw">
+            <div class="withdraw-form">
+                <div class="withdraw-info">
+                    <p>• 最低提现金额：50元（500金币）</p>
+                    <p>• 提现手续费：10%</p>
+                    <p>• 到账时间：1-3个工作日</p>
+                </div>
+                <div class="input-group">
+                    <label class="input-label">提现金额（元）</label>
+                    <input type="number" class="input" id="withdrawAmount" placeholder="请输入提现金额" min="50" step="1">
+                </div>
+                <p style="font-size:13px;color:var(--text-muted);margin-bottom:16px;">
+                    可提现金币：<span id="withdrawableCoins">{{ (current_user.coin_balance / 10) | int }}</span> 元
+                </p>
+                <button class="btn btn-primary btn-block" onclick="doWithdraw()">
+                    申请提现
+                </button>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    
+    {% include 'tabbar.html' %}
+</div>
+
+<script>
+let selectedPackage = null;
+let rechargePackages = [];
+
+async function loadWalletStats() {
+    const response = await api('/api/wallet/stats');
+    if (response.success) {
+        const stats = response.stats;
+        document.getElementById('statRecharge').textContent = stats.total_recharge | 0;
+        document.getElementById('statConsume').textContent = stats.total_consume | 0;
+        {% if current_user.gender == 'female' %}
+        document.getElementById('statIncome').textContent = stats.total_income | 0;
+        document.getElementById('statMessages').textContent = stats.received_messages | 0;
+        {% endif %}
+    }
+}
+
+async function loadTransactions() {
+    const response = await api('/api/wallet/transactions');
+    const container = document.getElementById('transactionList');
+    
+    if (!response.success || response.transactions.length === 0) {
+        container.innerHTML = `
+            <div class="empty-state">
+                <div class="empty-state-icon">📋</div>
+                <div class="empty-state-text">暂无交易记录</div>
+            </div>
+        `;
+        return;
+    }
+    
+    container.innerHTML = response.transactions.map(t => {
+        const iconClass = {
+            'recharge': 'recharge',
+            'consume': 'consume',
+            'income': 'income',
+            'withdraw': 'withdraw'
+        }[t.type] || '';
+        
+        const icon = {
+            'recharge': 'fa-plus',
+            'consume': 'fa-comment',
+            'income': 'fa-coins',
+            'withdraw': 'fa-arrow-up'
+        }[t.type] || 'fa-coins';
+        
+        const typeName = {
+            'recharge': '充值',
+            'consume': '消费',
+            'income': '收益',
+            'withdraw': '提现'
+        }[t.type] || t.type;
+        
+        const isPositive = t.amount > 0;
+        
+        return `
+            <div class="transaction-item">
+                <div class="transaction-icon ${iconClass}">
+                    <i class="fas ${icon}"></i>
+                </div>
+                <div class="transaction-info">
+                    <div class="transaction-type">${typeName}</div>
+                    <div class="transaction-desc">${t.description}</div>
+                </div>
+                <div class="transaction-amount ${isPositive ? 'positive' : 'negative'}">
+                    ${isPositive ? '+' : ''}${t.amount}
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+async function loadRechargePackages() {
+    const response = await api('/api/wallet/recharge-packages');
+    const container = document.getElementById('rechargePackages');
+    
+    if (response.success) {
+        rechargePackages = response.packages;
+        container.innerHTML = response.packages.map((pkg, index) => `
+            <div class="package-card ${index === 1 ? 'selected' : ''}" data-id="${pkg.id}" onclick="selectPackage(${pkg.id})">
+                <div class="package-info">
+                    <h4>${pkg.name}</h4>
+                    <p>${pkg.bonus > 0 ? `赠送 ${pkg.bonus} 金币` : '基础充值'}</p>
+                </div>
+                <div class="package-price">
+                    <div class="amount">¥${pkg.yuan}</div>
+                    <div class="coins">${pkg.coins + pkg.bonus} 金币</div>
+                </div>
+            </div>
+        `).join('');
+        
+        selectedPackage = response.packages[1];
+    }
+}
+
+function selectPackage(id) {
+    document.querySelectorAll('.package-card').forEach(card => {
+        card.classList.remove('selected');
+        if (card.dataset.id == id) {
+            card.classList.add('selected');
+        }
+    });
+    selectedPackage = rechargePackages.find(p => p.id === id);
+}
+
+async function doRecharge() {
+    if (!selectedPackage) {
+        showToast('请选择充值套餐', 'error');
+        return;
+    }
+    
+    // 模拟充值
+    const response = await api('/api/wallet/recharge', {
+        method: 'POST',
+        body: JSON.stringify({ package_id: selectedPackage.id })
+    });
+    
+    if (response.success) {
+        document.getElementById('balanceAmount').textContent = response.balance;
+        showToast(response.message);
+        loadTransactions();
+        loadWalletStats();
+    } else {
+        showToast(response.message, 'error');
+    }
+}
+
+async function doWithdraw() {
+    const amount = parseFloat(document.getElementById('withdrawAmount').value);
+    
+    if (!amount || amount < 50) {
+        showToast('最低提现金额为50元', 'error');
+        return;
+    }
+    
+    const response = await api('/api/wallet/withdraw', {
+        method: 'POST',
+        body: JSON.stringify({ amount: amount })
+    });
+    
+    if (response.success) {
+        document.getElementById('balanceAmount').textContent = response.balance;
+        document.getElementById('withdrawableCoins').textContent = Math.floor(response.balance / 10);
+        showToast(response.message);
+        loadTransactions();
+        loadWalletStats();
+    } else {
+        showToast(response.message, 'error');
+    }
+}
+
+function switchTab(tabName) {
+    document.querySelectorAll('.wallet-tab').forEach(t => t.classList.remove('active'));
+    document.querySelector(`.wallet-tab[data-tab="${tabName}"]`)?.classList.add('active');
+    
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    document.getElementById(`tab-${tabName}`)?.classList.add('active');
+    
+    if (tabName === 'recharge' && rechargePackages.length === 0) {
+        loadRechargePackages();
+    }
+}
+
+document.querySelectorAll('.wallet-tab').forEach(tab => {
+    tab.addEventListener('click', () => switchTab(tab.dataset.tab));
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+    loadWalletStats();
+    loadTransactions();
+    loadRechargePackages();
+});
+</script>
+{% endblock %}

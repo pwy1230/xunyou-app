@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#0a0a1a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>寻尤 - 消息</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=20260508b">
+    <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* 全局背景光晕效果 */
+        body { position: relative; }
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: 
+                radial-gradient(ellipse at top left, rgba(196,77,255,0.08) 0%, transparent 50%),
+                radial-gradient(ellipse at bottom right, rgba(255,107,157,0.06) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: -1;
+        }
+        
+        /* 统一卡片毛玻璃效果 */
+        .user-card, .chat-item, .menu-item, .package-card, .profile-card, .post-card,
+        .visitor-card, .settings-group, .balance-card, .transaction-item {
+            background: rgba(255,255,255,0.06);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .user-card:hover, .chat-item:hover, .menu-item:hover, .package-card:hover,
+        .profile-card:hover, .post-card:hover, .visitor-card:hover {
+            border-color: rgba(255,255,255,0.2);
+        }
+        
+        /* 导航栏微光 */
+        .tab-bar {
+            box-shadow: 0 -1px 20px rgba(255,107,157,0.08);
+        }
+        
+        /* 按钮微发光 */
+        .greet-btn, .fab, .action-btn, .balance-btn, .chat-send-btn {
+            box-shadow: 0 4px 15px rgba(255,107,157,0.25);
+        }
+
+        /* messages.html - 青蓝主题 */
+        .unread-badge, .chat-list-unread {
+            background: linear-gradient(135deg, #4facfe, #00f2fe) !important;
+        }
+        .header-title {
+            background: linear-gradient(135deg, #4facfe, #00f2fe);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+    </style>
+</head>
+<body>
+<div class="page-container">
+    <div class="header">
+        <div class="header-back" onclick="location.href='/home'">
+            <i class="fas fa-arrow-left"></i>
+        </div>
+        <div class="header-title">消息</div>
+        <div style="width:40px;"></div>
+    </div>
+    
+    <div class="main-content">
+        <div id="chatListContainer" style="padding:16px;">
+            <div class="loading">
+                <div class="loading-spinner"></div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 底部导航栏 -->
+    <nav class="tab-bar">
+        <a href="{{ url_for('home') }}" class="tab-item">
+            <i class="fas fa-compass"></i>
+            <span>首页</span>
+        </a>
+        <a href="{{ url_for('square') }}" class="tab-item">
+            <i class="fas fa-th-large"></i>
+            <span>动态</span>
+        </a>
+        <a href="{{ url_for('messages') }}" class="tab-item active">
+            <i class="fas fa-comment-dots"></i>
+            <span>消息</span>
+            <span class="badge" id="tabMsgBadge" style="display:none;">0</span>
+        </a>
+        <a href="{{ url_for('my_profile') }}" class="tab-item">
+            <i class="fas fa-user"></i>
+            <span>我的</span>
+        </a>
+    </nav>
+</div>
+
+<!-- 星空背景 -->
+<div class="starfield" id="starfield"></div>
+
+<script src="https://cdn.bootcdn.net/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
+<script>
+    // ========== 全局配置与工具函数 ==========
+    const API_BASE = '';
+
+    // Socket连接
+    var socket = null;
+    try {
+        socket = io();
+    } catch(e) {
+        console.warn('SocketIO not available');
+    }
+
+    // 全局时间格式化
+    function timeAgo(dateStr) {
+        if (!dateStr) return '';
+        var now = new Date();
+        var date = new Date(dateStr);
+        var diff = Math.floor((now - date) / 1000);
+        if (diff < 60) return '刚刚';
+        if (diff < 3600) return Math.floor(diff / 60) + '分钟前';
+        if (diff < 86400) return Math.floor(diff / 3600) + '小时前';
+        if (diff < 2592000) return Math.floor(diff / 86400) + '天前';
+        return dateStr.substring(0, 10);
+    }
+
+    // Toast提示
+    function showToast(message, type = 'success') {
+        const existing = document.querySelector('.toast');
+        if (existing) existing.remove();
+        
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        toast.textContent = message;
+        document.body.appendChild(toast);
+        
+        setTimeout(() => toast.remove(), 3000);
+    }
+
+    // API请求（带401处理，FormData时不设Content-Type）
+    async function api(url, options = {}) {
+        try {
+            const isFormData = options.body instanceof FormData;
+            const headers = isFormData ? {} : { 'Content-Type': 'application/json' };
+            if (options.headers) {
+                Object.assign(headers, options.headers);
+            }
+            const response = await fetch(API_BASE + url, {
+                headers: headers,
+                ...options
+            });
+            
+            if (response.status === 401) {
+                window.location.href = '/login';
+                return { success: false, error: '请先登录' };
+            }
+            
+            return await response.json();
+        } catch (error) {
+            console.error('API Error:', error);
+            return { success: false, message: '网络错误' };
+        }
+    }
+
+    // 加载状态
+    function showLoading() {
+        const overlay = document.createElement('div');
+        overlay.className = 'loading-overlay';
+        overlay.id = 'loadingOverlay';
+        overlay.innerHTML = '<div class="loading-spinner"></div>';
+        document.body.appendChild(overlay);
+    }
+
+    function hideLoading() {
+        const overlay = document.getElementById('loadingOverlay');
+        if (overlay) overlay.remove();
+    }
+
+    // 生成星星背景
+    function generateStars() {
+        const container = document.getElementById('starfield');
+        if (!container) return;
+        const oldStars = container.querySelectorAll('.star');
+        oldStars.forEach(s => s.remove());
+        for (let i = 0; i < 50; i++) {
+            const star = document.createElement('div');
+            star.className = 'star';
+            star.style.cssText = `
+                position: absolute;
+                width: ${Math.random() * 3 + 1}px;
+                height: ${Math.random() * 3 + 1}px;
+                background: white;
+                border-radius: 50%;
+                left: ${Math.random() * 100}%;
+                top: ${Math.random() * 100}%;
+                opacity: ${Math.random() * 0.5 + 0.3};
+                animation: twinkle ${Math.random() * 3 + 2}s ease-in-out infinite;
+                animation-delay: ${Math.random() * 2}s;
+            `;
+            container.appendChild(star);
+        }
+    }
+    document.addEventListener('DOMContentLoaded', generateStars);
+
+    // ========== 消息列表逻辑 ==========
+    async function loadChatList() {
+        try {
+        const response = await api('/api/chat/list');
+        const container = document.getElementById('chatListContainer');
+        
+        if (!response.success || !response.chat_list || response.chat_list.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-state-icon">💬</div>
+                    <div class="empty-state-title">暂无消息</div>
+                    <div class="empty-state-text">去首页打个招呼吧~</div>
+                </div>
+            `;
+            return;
+        }
+        
+        container.innerHTML = response.chat_list.map(chat => {
+            const user = chat.user;
+            const latest = chat.latest_message;
+            const preview = latest 
+                ? (latest.content.length > 30 ? latest.content.substring(0, 30) + '...' : latest.content)
+                : '暂无消息';
+            
+            return `
+                <div class="chat-list-item" onclick="location.href='/chat/${user.id}'">
+                    <div class="chat-list-avatar">
+                        ${user.avatar 
+                            ? `<img src="${user.avatar}" alt="${user.nickname}">`
+                            : `<div style="width:100%;height:100%;background:var(--bg-input);display:flex;align-items:center;justify-content:center;"><i class="fas fa-user" style="font-size:24px;color:var(--text-muted);"></i></div>`
+                        }
+                        ${user.is_online ? '<div class="online-dot"></div>' : ''}
+                    </div>
+                    <div class="chat-list-info">
+                        <div class="chat-list-name">${user.nickname}</div>
+                        <div class="chat-list-preview">${preview}</div>
+                    </div>
+                    <div class="chat-list-meta">
+                        <div class="chat-list-time">${latest ? timeAgo(latest.created_at) : ''}</div>
+                        ${chat.unread_count > 0 ? `<div class="chat-list-unread">${chat.unread_count}</div>` : ''}
+                    </div>
+                </div>
+            `;
+        }).join('');
+        } catch(e) { console.error('loadChatList error:', e); document.getElementById('chatListContainer').innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-secondary);">加载失败</div>'; }
+    }
+
+    // Socket监听新消息
+    if (typeof socket !== 'undefined' && socket) {
+        socket.on('new_message', function(data) {
+            loadChatList();
+        });
+    }
+
+    // 更新消息Badge
+    async function updateMsgBadge() {
+        try {
+            const res = await api('/api/messages/unread-count');
+            if (res && res.success && res.count > 0) {
+                var badges = document.querySelectorAll('#msgBadge, #tabMsgBadge');
+                badges.forEach(function(b) { b.textContent = res.count; b.style.display = ''; });
+            } else {
+                var badges = document.querySelectorAll('#msgBadge, #tabMsgBadge');
+                badges.forEach(function(b) { b.style.display = 'none'; });
+            }
+        } catch(e) {}
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        loadChatList();
+        updateMsgBadge();
+        setInterval(updateMsgBadge, 30000);
+    });
+</script>
+</body>
+</html>

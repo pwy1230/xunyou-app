@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>诚意会员 - 寻尤</title>
+    <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', sans-serif;
+            background: #0a0a1a;
+            min-height: 100vh;
+            color: white;
+            overflow-x: hidden;
+        }
+        .bg-slider {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            z-index: 0;
+        }
+        .bg-slide {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            object-fit: cover;
+            opacity: 0;
+            transition: opacity 1.5s ease;
+        }
+        .bg-slide.active { opacity: 1; }
+        .overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(180deg, 
+                rgba(10,10,26,0.15) 0%, 
+                rgba(10,10,26,0.3) 30%, 
+                rgba(10,10,26,0.75) 60%, 
+                rgba(10,10,26,0.95) 85%,
+                rgba(10,10,26,1) 100%
+            );
+            z-index: 1;
+        }
+        .page {
+            position: relative;
+            z-index: 2;
+            min-height: 100vh;
+            max-width: 420px;
+            margin: 0 auto;
+            padding: 50px 20px 30px;
+        }
+        .top-logo {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+        .top-logo img {
+            width: 44px; height: 44px;
+            border-radius: 10px;
+            vertical-align: middle;
+            margin-right: 8px;
+        }
+        .top-logo span {
+            font-size: 18px; font-weight: 600;
+            color: rgba(255,255,255,0.8);
+            vertical-align: middle;
+        }
+        .member-card {
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            border-radius: 20px;
+            padding: 22px 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 8px 30px rgba(255,165,0,0.3);
+        }
+        .member-main {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .member-info { flex: 1; }
+        .member-title {
+            font-size: 22px; font-weight: 800;
+            color: #1a1a2e;
+            margin-bottom: 4px;
+        }
+        .member-toggle {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 13px;
+            color: rgba(26,26,46,0.6);
+            cursor: pointer;
+            margin-bottom: 2px;
+        }
+        .member-toggle i {
+            font-size: 10px;
+            transition: transform 0.3s ease;
+        }
+        .member-toggle.expanded i {
+            transform: rotate(180deg);
+        }
+        .member-subtitle {
+            font-size: 12px;
+            color: rgba(26,26,46,0.5);
+        }
+        .member-right { text-align: right; }
+        .member-price {
+            font-size: 32px; font-weight: 900;
+            color: #1a1a2e;
+            line-height: 1;
+        }
+        .member-price span {
+            font-size: 14px; font-weight: 600;
+        }
+        .member-original {
+            font-size: 12px;
+            color: rgba(26,26,46,0.4);
+            text-decoration: line-through;
+        }
+        .priv-section {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease;
+            margin-bottom: 0;
+        }
+        .priv-section.show {
+            max-height: 500px;
+            margin-bottom: 16px;
+        }
+        .priv-header {
+            font-size: 15px; font-weight: 600;
+            color: rgba(255,255,255,0.9);
+            margin-bottom: 12px;
+        }
+        .priv-list {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        .priv-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 14px;
+            background: rgba(255,255,255,0.04);
+            border-radius: 14px;
+        }
+        .priv-icon {
+            width: 38px; height: 38px;
+            background: rgba(255,255,255,0.08);
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 16px;
+            margin-right: 12px;
+            flex-shrink: 0;
+            color: #ffd700;
+        }
+        .priv-info { flex: 1; }
+        .priv-name {
+            font-size: 14px; font-weight: 600;
+            color: rgba(255,255,255,0.9);
+        }
+        .priv-desc {
+            font-size: 11px;
+            color: rgba(255,255,255,0.4);
+            margin-top: 2px;
+        }
+        .help-bar {
+            background: rgba(255,255,255,0.04);
+            border-radius: 14px;
+            padding: 14px 18px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            cursor: pointer;
+        }
+        .help-bar span {
+            font-size: 13px;
+            color: rgba(255,255,255,0.5);
+        }
+        .help-bar i {
+            color: rgba(255,255,255,0.3);
+            font-size: 12px;
+        }
+        .open-btn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            border: none;
+            border-radius: 30px;
+            color: #1a1a2e;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 8px 30px rgba(255,165,0,0.3);
+            margin-bottom: 14px;
+        }
+        .open-btn:active { transform: scale(0.97); }
+        .skip-btn {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            background: transparent;
+            border: none;
+            color: rgba(255,255,255,0.3);
+            font-size: 14px;
+            text-align: center;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+        .modal-overlay.show { display: flex; }
+        .modal {
+            background: #1a1a2e;
+            border-radius: 24px;
+            padding: 30px;
+            max-width: 340px;
+            width: 100%;
+            text-align: center;
+        }
+        .modal-icon {
+            width: 60px; height: 60px;
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 20px;
+        }
+        .modal-icon i { font-size: 28px; color: white; }
+        .modal-title { font-size: 20px; font-weight: 600; margin-bottom: 10px; }
+        .modal-desc { font-size: 14px; color: rgba(255,255,255,0.6); margin-bottom: 24px; line-height: 1.6; }
+        .modal-btn {
+            width: 100%; padding: 16px;
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            border: none; border-radius: 24px;
+            color: #1a1a2e; font-size: 16px; font-weight: 600;
+            cursor: pointer; margin-bottom: 12px;
+        }
+        .modal-cancel {
+            background: transparent; border: none;
+            color: rgba(255,255,255,0.4); font-size: 14px; cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-slider">
+        <img class="bg-slide active" src="/static/vip_bg/1.jpg" alt="">
+        <img class="bg-slide" src="/static/vip_bg/2.jpg" alt="">
+        <img class="bg-slide" src="/static/vip_bg/3.jpg" alt="">
+        <img class="bg-slide" src="/static/vip_bg/4.jpg" alt="">
+        <img class="bg-slide" src="/static/vip_bg/5.jpg" alt="">
+        <img class="bg-slide" src="/static/vip_bg/6.png" alt="">
+    </div>
+    <div class="overlay"></div>
+
+    <div class="page">
+        <div class="top-logo">
+            <img src="/static/logo.png" alt="">
+            <span>寻尤</span>
+        </div>
+
+        <div class="member-card">
+            <div class="member-main">
+                <div class="member-info">
+                    <div class="member-title">诚意会员</div>
+                    <div class="member-toggle" id="togglePriv">
+                        查看权限 <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="member-subtitle">加入认识更多有趣的灵魂</div>
+                </div>
+                <div class="member-right">
+                    <div class="member-price">¥29 <span>/永久</span></div>
+                    <div class="member-original">原价199.00</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="priv-section" id="privSection">
+            <div class="priv-header">特权说明</div>
+            <div class="priv-list">
+                <div class="priv-item">
+                    <div class="priv-icon"><i class="fas fa-eye"></i></div>
+                    <div class="priv-info">
+                        <div class="priv-name">查看谁看过我</div>
+                        <div class="priv-desc">可立即与TA们聊天</div>
+                    </div>
+                </div>
+                <div class="priv-item">
+                    <div class="priv-icon"><i class="fas fa-comment-dots"></i></div>
+                    <div class="priv-info">
+                        <div class="priv-name">每天10次聊天机会</div>
+                        <div class="priv-desc">和TA们聊聊那些美好时刻</div>
+                    </div>
+                </div>
+                <div class="priv-item">
+                    <div class="priv-icon"><i class="fas fa-map-marker-alt"></i></div>
+                    <div class="priv-info">
+                        <div class="priv-name">查看同城用户</div>
+                        <div class="priv-desc">解锁同城用户，看谁和你在同一座城市</div>
+                    </div>
+                </div>
+                <div class="priv-item">
+                    <div class="priv-icon"><i class="fas fa-heart"></i></div>
+                    <div class="priv-info">
+                        <div class="priv-name">查看谁喜欢我</div>
+                        <div class="priv-desc">发现对你心动的人</div>
+                    </div>
+                </div>
+                <div class="priv-item">
+                    <div class="priv-icon"><i class="fas fa-filter"></i></div>
+                    <div class="priv-info">
+                        <div class="priv-name">组合筛选</div>
+                        <div class="priv-desc">多条件精准找人，锁定你的TA</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="help-bar" id="helpBar">
+            <span>支付遇到困难？请求帮助</span>
+            <i class="fas fa-chevron-right"></i>
+        </div>
+
+        <button class="open-btn" id="open-vip-btn">
+            立即加入 →
+        </button>
+        <a href="/logout" class="skip-btn">暂不开通</a>
+    </div>
+
+    <div class="modal-overlay" id="modal">
+        <div class="modal">
+            <div class="modal-icon"><i class="fas fa-gem"></i></div>
+            <div class="modal-title">联系客服开通</div>
+            <div class="modal-desc">
+                请添加客服微信<br>
+                <strong style="color:#ffd700;font-size:18px;">xunyou_vip</strong><br><br>
+                备注"诚意会员"，转账<strong style="color:#ffd700;">29元</strong>即可开通
+            </div>
+            <button class="modal-btn" id="copy-wechat">
+                <i class="fas fa-copy"></i> 复制微信号
+            </button>
+            <button class="modal-cancel" id="close-modal">稍后再说</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var slides = document.querySelectorAll('.bg-slide');
+            var current = 0;
+            setInterval(function() {
+                slides[current].classList.remove('active');
+                current = (current + 1) % slides.length;
+                slides[current].classList.add('active');
+            }, 4000);
+
+            var toggleBtn = document.getElementById('togglePriv');
+            var privSection = document.getElementById('privSection');
+            toggleBtn.addEventListener('click', function() {
+                privSection.classList.toggle('show');
+                toggleBtn.classList.toggle('expanded');
+            });
+
+            document.getElementById('helpBar').addEventListener('click', function() {
+                document.getElementById('modal').classList.add('show');
+            });
+
+            document.getElementById('open-vip-btn').addEventListener('click', function() {
+                document.getElementById('modal').classList.add('show');
+            });
+
+            document.getElementById('copy-wechat').addEventListener('click', function() {
+                navigator.clipboard.writeText('xunyou_vip').then(function() {
+                    alert('微信号已复制到剪贴板');
+                    document.getElementById('modal').classList.remove('show');
+                }).catch(function() {
+                    prompt('请复制微信号:', 'xunyou_vip');
+                });
+            });
+
+            document.getElementById('close-modal').addEventListener('click', function() {
+                document.getElementById('modal').classList.remove('show');
+            });
+
+            document.getElementById('modal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    this.classList.remove('show');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
