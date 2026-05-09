@@ -36,7 +36,10 @@ ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
 
 # 初始化扩展
 db.init_app(app)
-socketio = SocketIO(app, cors_allowed_origins="*", async_mode='threading')
+socketio = SocketIO(app, cors_allowed_origins="*", async_mode='threading', 
+                    ping_timeout=60, ping_interval=25,
+                    transports=['polling', 'websocket'],
+                    manage_session=False)
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
