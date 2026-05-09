@@ -25,11 +25,13 @@ from features_bp import features_bp
 # 创建应用
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'yan_yu_lang_secret_key_2024'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///yan_yu_lang.db'
+# 数据库路径：优先使用环境变量（PythonAnywhere等云平台），否则使用默认相对路径
+_basedir = os.path.abspath(os.path.dirname(__file__))
+_db_path = os.environ.get('DATABASE_PATH', os.path.join(_basedir, 'yan_yu_lang.db'))
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + _db_path
 app.config['MAX_CONTENT_LENGTH'] = 128 * 1024 * 1024  # 上传限制128MB
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['UPLOAD_FOLDER'] = 'static/uploads'
-app.config['MAX_CONTENT_LENGTH'] = 128 * 1024 * 1024  # 上传限制128MB
+app.config['UPLOAD_FOLDER'] = os.environ.get('UPLOAD_FOLDER', os.path.join(_basedir, 'static', 'uploads'))
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
 
 # 初始化扩展
@@ -1127,29 +1129,24 @@ def init_db():
             print("测试女用户: 13800138001-23 / 123456 (部分设为在线)")
             print("测试男用户: 13800138004 / 123456 (余额1000金币)")
 
+# 注册Blueprint（模块级别，确保WSGI部署时也能加载）
+app.register_blueprint(features_bp)
+app.register_blueprint(admin_bp)
+
+# 确保上传目录存在
+os.makedirs(os.path.join(_basedir, 'static', 'uploads', 'avatars'), exist_ok=True)
+os.makedirs(os.path.join(_basedir, 'static', 'uploads', 'posts'), exist_ok=True)
+
 if __name__ == '__main__':
     init_db()
     
-    # 确保上传目录存在
-    os.makedirs('static/uploads/avatars', exist_ok=True)
-    os.makedirs('static/uploads/posts', exist_ok=True)
-    
     # 创建默认头像
-    default_avatar = 'static/uploads/avatars/default.png'
+    default_avatar = os.path.join(_basedir, 'static', 'uploads', 'avatars', 'default.png')
     if not os.path.exists(default_avatar) and HAS_PIL:
         try:
             img = Image.new('RGB', (200, 200), color=(238, 238, 238))
             img.save(default_avatar)
         except:
             pass
-    
-    @app.route("/api/users/active")
-    def api_active_users():
-        users = User.query.filter_by(is_online=True).limit(20).all()
-        return jsonify({"success": True, "users": [u.to_dict() for u in users]})
-
-    # 注册Blueprint
-    app.register_blueprint(features_bp)
-    app.register_blueprint(admin_bp)
     
     socketio.run(app, host='0.0.0.0', port=5000, debug=False)

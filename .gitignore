@@ -47,5 +47,7 @@ splash_preview.html
 test_start.py
 闫雨浪/
 
-# Deploy directory (generated locally)
-deploy/
+# Deploy directory (generated locally) - 排除output但保留deploy
+deploy/android-studio/app/build/
+deploy/cordova/platforms/
+deploy/cordova/plugins/

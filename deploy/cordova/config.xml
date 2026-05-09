@@ -1,0 +1,67 @@
+<?xml version='1.0' encoding='utf-8'?>
+<widget id="com.xunyou.app" version="1.0.0" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
+    <name>寻尤</name>
+    <description>寻尤 - 付费聊天社交APP</description>
+    <author email="dev@xunyou.app" href="https://xunyou.app">XunYou Team</author>
+    
+    <!-- ====== 修改为你的实际部署地址 ====== -->
+    <content src="https://你的用户名.pythonanywhere.com" />
+    
+    <!-- 允许访问的域名 -->
+    <access origin="https://*.pythonanywhere.com" />
+    <access origin="*" />
+    
+    <!-- 允许导航到APP域名 -->
+    <allow-navigation href="https://*.pythonanywhere.com/*" />
+    
+    <!-- 允许Intent -->
+    <allow-intent href="http://*/*" />
+    <allow-intent href="https://*/*" />
+    <allow-intent href="tel:*" />
+    <allow-intent href="sms:*" />
+    <allow-intent href="mailto:*" />
+    <allow-intent href="geo:*" />
+    
+    <!-- Android平台配置 -->
+    <platform name="android">
+        <!-- 允许调试 -->
+        <preference name="android-minSdkVersion" value="24" />
+        <preference name="android-targetSdkVersion" value="33" />
+        <preference name="AndroidWindowSplashScreenBackground" value="#0a0a1a" />
+        
+        <!-- 图标配置 -->
+        <icon density="ldpi" src="www/res/icon/ldpi.png" />
+        <icon density="mdpi" src="www/res/icon/mdpi.png" />
+        <icon density="hdpi" src="www/res/icon/hdpi.png" />
+        <icon density="xhdpi" src="www/res/icon/xhdpi.png" />
+        <icon density="xxhdpi" src="www/res/icon/xxhdpi.png" />
+        <icon density="xxxhdpi" src="www/res/icon/xxxhdpi.png" />
+        
+        <!-- 启动画面 -->
+        <splash density="land-ldpi" src="www/res/splash/land-ldpi.png" />
+        <splash density="land-mdpi" src="www/res/splash/land-mdpi.png" />
+        <splash density="land-hdpi" src="www/res/splash/land-hdpi.png" />
+        <splash density="land-xhdpi" src="www/res/splash/land-xhdpi.png" />
+        <splash density="land-xxhdpi" src="www/res/splash/land-xxhdpi.png" />
+        <splash density="land-xxxhdpi" src="www/res/splash/land-xxxhdpi.png" />
+        <splash density="port-ldpi" src="www/res/splash/port-ldpi.png" />
+        <splash density="port-mdpi" src="www/res/splash/port-mdpi.png" />
+        <splash density="port-hdpi" src="www/res/splash/port-hdpi.png" />
+        <splash density="port-xhdpi" src="www/res/splash/port-xhdpi.png" />
+        <splash density="port-xxhdpi" src="www/res/splash/port-xxhdpi.png" />
+        <splash density="port-xxxhdpi" src="www/res/splash/port-xxxhdpi.png" />
+        
+        <allow-intent href="market:*" />
+    </platform>
+    
+    <!-- 全局偏好设置 -->
+    <preference name="StatusBarOverlaysWebView" value="true" />
+    <preference name="StatusBarStyle" value="lightcontent" />
+    <preference name="AutoHideSplashScreen" value="true" />
+    <preference name="SplashScreenDelay" value="2000" />
+    <preference name="FadeSplashScreen" value="true" />
+    <preference name="FadeSplashScreenDuration" value="500" />
+    <preference name="DisallowOverscroll" value="true" />
+    <preference name="KeyboardDisplayRequiresUserAction" value="false" />
+    <preference name="SuppressesIncrementalRendering" value="true" />
+</widget>
