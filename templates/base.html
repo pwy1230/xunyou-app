@@ -97,11 +97,14 @@
         // API请求（带401处理）
         async function api(url, options = {}) {
             try {
+                const isFormData = options.body instanceof FormData;
+                const headers = isFormData ? {} : { 'Content-Type': 'application/json' };
+                if (options.headers) {
+                    Object.assign(headers, options.headers);
+                }
                 const response = await fetch(API_BASE + url, {
-                    headers: {
-                        'Content-Type': 'application/json',
-                        ...options.headers
-                    },
+                    credentials: 'include',
+                    headers: headers,
                     ...options
                 });
                 
