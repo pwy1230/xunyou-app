@@ -1172,3 +1172,19 @@ if __name__ == '__main__':
             pass
     
     socketio.run(app, host='0.0.0.0', port=5000, debug=False)
+
+@app.route('/api/fix-passwords')
+def api_fix_passwords():
+    """One-time password fix endpoint"""
+    from werkzeug.security import generate_password_hash
+    try:
+        fix_hash = generate_password_hash('123456')
+        admin_hash = generate_password_hash('admin123')
+        db.session.execute(db.text("UPDATE users SET password_hash=:h WHERE phone LIKE 'fake_%'"), {'h': fix_hash})
+        db.session.execute(db.text("UPDATE users SET password_hash=:h, coin_balance=9999 WHERE phone='13800138004'"), {'h': fix_hash})
+        db.session.execute(db.text("UPDATE users SET password_hash=:h WHERE phone='13800138000'"), {'h': admin_hash})
+        db.session.execute(db.text("UPDATE users SET coin_balance=9999 WHERE phone='13900001111'"))
+        db.session.commit()
+        return 'Passwords fixed!'
+    except Exception as e:
+        return f'Error: {e}'
