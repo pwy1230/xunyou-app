@@ -10,6 +10,7 @@ from flask import Flask, render_template, request, jsonify, redirect, url_for, s
 from flask_socketio import SocketIO, emit, join_room, leave_room
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from werkzeug.utils import secure_filename
+from werkzeug.security import generate_password_hash
 try:
     from PIL import Image
     HAS_PIL = True
@@ -1133,6 +1134,30 @@ app.register_blueprint(admin_bp)
 # 确保上传目录存在
 os.makedirs(os.path.join(_basedir, 'static', 'uploads', 'avatars'), exist_ok=True)
 os.makedirs(os.path.join(_basedir, 'static', 'uploads', 'posts'), exist_ok=True)
+os.makedirs(os.path.join(_basedir, 'static', 'uploads', 'photos'), exist_ok=True)
+
+# 自动修复种子用户密码（仅执行一次）
+_PASSWORDS_FIXED_FLAG = os.path.join(_basedir, '.passwords_fixed')
+if not os.path.exists(_PASSWORDS_FIXED_FLAG):
+    try:
+        with app.app_context():
+            _fix_hash = generate_password_hash('123456')
+            _admin_hash = generate_password_hash('admin123')
+            # 修复所有fake_开头的女用户密码
+            db.session.execute(db.text("UPDATE users SET password_hash=:h WHERE phone LIKE 'fake_%'"), {'h': _fix_hash})
+            # 修复测试男用户
+            db.session.execute(db.text("UPDATE users SET password_hash=:h, coin_balance=9999 WHERE phone='13800138004'"), {'h': _fix_hash})
+            # 修复管理员
+            db.session.execute(db.text("UPDATE users SET password_hash=:h WHERE phone='13800138000'"), {'h': _admin_hash})
+            # 修复注册测试号
+            db.session.execute(db.text("UPDATE users SET coin_balance=9999 WHERE phone='13900001111'"))
+            db.session.commit()
+            # 写标记文件，避免重复执行
+            with open(_PASSWORDS_FIXED_FLAG, 'w') as f:
+                f.write('done')
+            print("密码修复完成！")
+    except Exception as e:
+        print(f"密码修复跳过: {e}")
 
 if __name__ == '__main__':
     init_db()
