@@ -152,6 +152,12 @@
     color: rgba(255, 255, 255, 0.35);
 }
 
+/* date输入框在深色背景下的样式 */
+.form-input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+    cursor: pointer;
+}
+
 .form-input:focus {
     border-color: #ff6b9d;
     box-shadow: 0 0 20px rgba(255, 107, 157, 0.2);
@@ -384,10 +390,22 @@
 
 {% block extra_js %}
 <script>
+// ========== 全局注册数据（分步收集，最后一次性提交） ==========
+var regData = {
+    phone: '',
+    password: '',
+    confirm_password: '',
+    gender: '',
+    nickname: '',
+    birthday: '',
+    city: '',
+    bio: '',
+    avatar: ''
+};
+
 document.addEventListener('DOMContentLoaded', function() {
     var currentStep = 0;
     var selectedGender = '';
-    var phone = '';
     var countdown = 0;
     
     // Tab切换
@@ -408,11 +426,11 @@ document.addEventListener('DOMContentLoaded', function() {
         if (target) target.classList.add('active');
     }
     
-    // 发送验证码
+    // 发送验证码（注册步骤用）
     var verifyTimer = null;
     window.sendVerifyCode = async function() {
-        var phoneInput = document.getElementById('loginPhone');
-        phone = phoneInput.value;
+        var phoneInput = document.getElementById('regPhone');
+        var phone = phoneInput ? phoneInput.value : '';
         
         if (!phone || phone.length !== 11) {
             showToast('请输入正确的手机号', 'error');
@@ -424,13 +442,18 @@ document.addEventListener('DOMContentLoaded', function() {
             body: JSON.stringify({ phone: phone })
         });
         
+        if (checkRes.exists) {
+            showToast('该手机号已注册，请直接登录', 'error');
+            return;
+        }
+        
         var res = await api('/api/send-verify-code', {
             method: 'POST',
             body: JSON.stringify({ phone: phone })
         });
         
         if (res.success) {
-            showToast('验证码已发送');
+            showToast('验证码已发送（模拟：' + (res.code || '1234') + '）');
             startVerifyCountdown();
         }
     };
@@ -439,6 +462,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function startVerifyCountdown() {
         countdown = 60;
         var btn = document.querySelector('.verify-btn');
+        if (!btn) return;
         btn.disabled = true;
         btn.textContent = countdown + 's后重试';
         
@@ -454,41 +478,59 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 1000);
     }
     
-    // 登录
+    // ========== 登录 ==========
     window.login = async function() {
-        var phone = document.getElementById('loginPhone').value;
+        var phone = document.getElementById('loginPhone').value.trim();
         var password = document.getElementById('loginPassword').value;
         
         if (!phone || !password) {
-            showToast('请填写完整信息', 'error');
+            showToast('请输入手机号和密码', 'error');
             return;
         }
         
-        var res = await api('/api/login', {
-            method: 'POST',
-            body: JSON.stringify({ phone: phone, password: password })
-        });
+        if (phone.length !== 11) {
+            showToast('请输入正确的11位手机号', 'error');
+            return;
+        }
         
-        if (res.success) {
-            showToast('登录成功');
-            if (res.needs_profile) {
-                window.location.href = '/setup-profile';
+        var btn = document.querySelector('.form-step[data-step="0"] .btn-login');
+        if (btn) { btn.disabled = true; btn.textContent = '登录中...'; }
+        
+        try {
+            var res = await api('/api/login', {
+                method: 'POST',
+                body: JSON.stringify({ phone: phone, password: password })
+            });
+            
+            if (res.success) {
+                showToast('登录成功');
+                setTimeout(function() {
+                    if (res.needs_profile) {
+                        window.location.href = '/setup-profile';
+                    } else {
+                        window.location.href = '/home';
+                    }
+                }, 500);
             } else {
-                window.location.href = '/home';
+                showToast(res.message || '登录失败', 'error');
             }
-        } else {
-            showToast(res.message || '登录失败', 'error');
+        } catch(e) {
+            showToast('网络错误，请重试', 'error');
+        } finally {
+            if (btn) { btn.disabled = false; btn.textContent = '登 录'; }
         }
     };
     
-    // 注册 - 下一步
+    // ========== 注册 - 第一步（手机号+密码+验证码） ==========
     window.registerNext = async function() {
         var phoneInput = document.getElementById('regPhone');
-        var verifyCode = document.getElementById('verifyCode').value;
-        phone = phoneInput.value;
+        var verifyCode = document.getElementById('verifyCode').value.trim();
+        var password = document.getElementById('regPassword').value;
+        var confirmPassword = document.getElementById('regConfirmPassword').value;
+        var phone = phoneInput ? phoneInput.value.trim() : '';
         
         if (!phone || phone.length !== 11) {
-            showToast('请输入正确的手机号', 'error');
+            showToast('请输入正确的11位手机号', 'error');
             return;
         }
         
@@ -497,51 +539,45 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
-        var checkRes = await api('/api/check-phone', {
-            method: 'POST',
-            body: JSON.stringify({ phone: phone })
-        });
-        
-        if (checkRes.exists) {
-            showToast('该手机号已注册，请直接登录', 'error');
+        if (!password || password.length < 6) {
+            showToast('密码至少6位', 'error');
             return;
         }
         
-        var res = await api('/api/register', {
-            method: 'POST',
-            body: JSON.stringify({ phone: phone, verify_code: verifyCode, password: '123456' })
-        });
-        
-        if (res.success) {
-            showToast('注册成功');
-            showStep(3);
-        } else {
-            showToast(res.message || '注册失败', 'error');
+        if (password !== confirmPassword) {
+            showToast('两次密码输入不一致', 'error');
+            return;
         }
+        
+        // 存储到全局注册数据
+        regData.phone = phone;
+        regData.password = password;
+        regData.confirm_password = confirmPassword;
+        
+        // 进入性别选择步骤
+        showStep(3);
     };
     
-    // 选择性别
+    // ========== 选择性别（仅本地记录，不调API） ==========
     window.selectGender = function(gender) {
         selectedGender = gender;
+        regData.gender = gender;
         document.querySelectorAll('.gender-option').forEach(function(el) { el.classList.remove('selected'); });
         var target = document.querySelector('.gender-option.' + gender);
         if (target) target.classList.add('selected');
     };
     
-    // 确认性别
-    window.confirmGender = async function() {
+    // ========== 确认性别（仅本地记录，进入下一步） ==========
+    window.confirmGender = function() {
         if (!selectedGender) {
             showToast('请选择性别', 'error');
             return;
         }
-        var res = await api('/api/profile', {
-            method: 'POST',
-            body: JSON.stringify({ gender: selectedGender })
-        });
-        if (res.success) { showStep(4); } else { showToast('设置失败', 'error'); }
+        regData.gender = selectedGender;
+        showStep(4);
     };
     
-    // 头像上传
+    // ========== 头像上传（预览 + 存base64） ==========
     window.uploadAvatar = function(input) {
         if (input.files && input.files[0]) {
             var reader = new FileReader();
@@ -552,41 +588,59 @@ document.addEventListener('DOMContentLoaded', function() {
                 var upload = document.querySelector('.avatar-upload');
                 upload.querySelector('i').style.display = 'none';
                 upload.querySelector('span').style.display = 'none';
+                // 存储base64到全局注册数据
+                regData.avatar = e.target.result;
             };
             reader.readAsDataURL(input.files[0]);
-            
-            var formData = new FormData();
-            formData.append('avatar', input.files[0]);
-            
-            fetch('/api/upload-avatar', { method: 'POST', body: formData })
-                .then(function(r) { return r.json(); })
-                .then(function(res) { if (res.success) showToast('头像上传成功'); });
         }
     };
     
-    // 保存资料
+    // ========== 保存资料（一次性提交所有注册数据到 /api/register） ==========
     window.saveProfile = async function() {
-        var nickname = document.getElementById('nickname').value;
-        var age = document.getElementById('age').value;
-        var city = document.getElementById('city').value;
-        var bio = document.getElementById('bio').value;
+        var nickname = document.getElementById('nickname').value.trim();
+        var birthday = document.getElementById('birthday').value;
+        var city = document.getElementById('city').value.trim();
+        var bio = document.getElementById('bio').value.trim();
         
         if (!nickname) { showToast('请输入昵称', 'error'); return; }
+        if (!birthday) { showToast('请选择出生日期', 'error'); return; }
+        if (!city) { showToast('请输入所在城市', 'error'); return; }
         
-        var res = await api('/api/profile', {
-            method: 'POST',
-            body: JSON.stringify({ nickname: nickname, age: age, city: city, bio: bio, gender: selectedGender })
-        });
+        // 填充全局注册数据
+        regData.nickname = nickname;
+        regData.birthday = birthday;
+        regData.city = city;
+        regData.bio = bio;
         
-        if (res.success) {
-            showToast('资料完善成功');
-            window.location.href = '/home';
-        } else {
-            showToast('保存失败', 'error');
+        var btn = document.querySelector('.form-step[data-step="4"] .btn-login');
+        if (btn) { btn.disabled = true; btn.textContent = '注册中...'; }
+        
+        try {
+            var res = await api('/api/register', {
+                method: 'POST',
+                body: JSON.stringify(regData)
+            });
+            
+            if (res.success) {
+                showToast('注册成功！');
+                setTimeout(function() {
+                    if (res.redirect) {
+                        window.location.href = res.redirect;
+                    } else {
+                        window.location.href = '/home';
+                    }
+                }, 500);
+            } else {
+                showToast(res.message || '注册失败', 'error');
+            }
+        } catch(e) {
+            showToast('网络错误，请重试', 'error');
+        } finally {
+            if (btn) { btn.disabled = false; btn.textContent = '开始探索'; }
         }
     };
     
-    // 初始化
+    // ========== 初始化 ==========
     {% if page == 'register' %}
     showStep(1);
     {% elif page == 'setup' %}
@@ -623,7 +677,7 @@ document.addEventListener('DOMContentLoaded', function() {
             <button class="btn-login" onclick="login()">登 录</button>
         </div>
         
-        <!-- 注册-手机号 -->
+        <!-- 注册-手机号+密码 -->
         <div class="form-step" data-step="1">
             <div class="form-group">
                 <i class="fas fa-phone form-input-icon"></i>
@@ -634,6 +688,14 @@ document.addEventListener('DOMContentLoaded', function() {
                     <input type="text" id="verifyCode" class="form-input" placeholder="验证码" maxlength="4">
                     <button class="verify-btn" onclick="sendVerifyCode()">获取验证码</button>
                 </div>
+            </div>
+            <div class="form-group">
+                <i class="fas fa-lock form-input-icon"></i>
+                <input type="password" id="regPassword" class="form-input" placeholder="设置密码（至少6位）">
+            </div>
+            <div class="form-group">
+                <i class="fas fa-lock form-input-icon"></i>
+                <input type="password" id="regConfirmPassword" class="form-input" placeholder="确认密码">
             </div>
             <button class="btn-login" onclick="registerNext()">下一步</button>
         </div>
@@ -670,7 +732,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 <input type="text" id="nickname" class="form-input" placeholder="昵称" style="padding-left:20px">
             </div>
             <div class="form-group">
-                <input type="number" id="age" class="form-input" placeholder="年龄" min="18" max="100" style="padding-left:20px">
+                <input type="date" id="birthday" class="form-input" placeholder="出生日期" style="padding-left:20px;color:rgba(255,255,255,0.85)">
             </div>
             <div class="form-group">
                 <input type="text" id="city" class="form-input" placeholder="所在城市" style="padding-left:20px">
