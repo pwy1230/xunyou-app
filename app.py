@@ -124,9 +124,7 @@ def require_vip_male(f):
 @app.route('/home')
 @login_required
 def home():
-    # 男用户未开通诚意会员重定向到VIP页面
-    if current_user.gender == 'male' and current_user.vip_type == 0 and not current_user.is_admin():
-        return redirect(url_for('vip_page'))
+    # 男用户未开通诚意会员，首页顶部显示VIP提示，不强制跳转
 
     # 直接后端查询用户列表，传给模板渲染
     target_gender = 'female' if current_user.gender == 'male' else 'male'
@@ -163,15 +161,11 @@ def chat(user_id):
 @app.route('/messages')
 @login_required
 def messages():
-    if current_user.gender == 'male' and current_user.vip_type == 0 and not current_user.is_admin():
-        return redirect(url_for('vip_page'))
     return render_template('messages.html')
 
 @app.route('/square')
 @login_required
 def square():
-    if current_user.gender == 'male' and current_user.vip_type == 0 and not current_user.is_admin():
-        return redirect(url_for('vip_page'))
     return render_template('square.html')
 
 @app.route('/post/<int:post_id>')
