@@ -1188,3 +1188,16 @@ def api_fix_passwords():
         return 'Passwords fixed!'
     except Exception as e:
         return f'Error: {e}'
+
+@app.route('/api/git-pull')
+def api_git_pull():
+    """Pull latest code from GitHub"""
+    import subprocess
+    try:
+        result = subprocess.run(['git', 'pull', 'origin', 'main'], 
+                              capture_output=True, text=True, 
+                              cwd='/home/13800138000/xunyou-app',
+                              timeout=30)
+        return f"stdout: {result.stdout}\nstderr: {result.stderr}\nreturncode: {result.returncode}"
+    except Exception as e:
+        return f"Error: {e}"
