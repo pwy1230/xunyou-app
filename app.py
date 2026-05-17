@@ -1131,6 +1131,18 @@ def init_db():
 app.register_blueprint(features_bp)
 app.register_blueprint(admin_bp)
 
+# Auto git-pull on startup (for remote deployment)
+def auto_git_pull():
+    import subprocess
+    try:
+        result = subprocess.run(['git', 'pull'], capture_output=True, text=True, cwd=os.path.dirname(os.path.abspath(__file__)), timeout=30)
+        print(f"Auto git-pull: {result.stdout}")
+    except Exception as e:
+        print(f"Auto git-pull failed: {e}")
+
+auto_git_pull()
+
+
 # 确保上传目录存在
 os.makedirs(os.path.join(_basedir, 'static', 'uploads', 'avatars'), exist_ok=True)
 os.makedirs(os.path.join(_basedir, 'static', 'uploads', 'posts'), exist_ok=True)
