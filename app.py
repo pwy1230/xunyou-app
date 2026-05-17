@@ -1172,30 +1172,6 @@ if not os.path.exists(_PASSWORDS_FIXED_FLAG):
         print(f"密码修复跳过: {e}")
 
 
-@app.route('/api/git-pull', methods=['POST'])
-def api_git_pull():
-    import subprocess
-    try:
-        result = subprocess.run(['git', 'pull'], capture_output=True, text=True, cwd='/home/13800138000/xunyou-app')
-        return jsonify({'status': 'ok', 'output': result.stdout, 'error': result.stderr})
-    except Exception as e:
-        return jsonify({'status': 'error', 'message': str(e)})
-
-if __name__ == '__main__':
-    init_db()
-    
-    # 创建默认头像
-    default_avatar = os.path.join(_basedir, 'static', 'uploads', 'avatars', 'default.png')
-    if not os.path.exists(default_avatar) and HAS_PIL:
-        try:
-            img = Image.new('RGB', (200, 200), color=(238, 238, 238))
-            img.save(default_avatar)
-        except:
-            pass
-    
-    socketio.run(app, host='0.0.0.0', port=5000, debug=False)
-
-@app.route('/api/fix-passwords')
 def api_fix_passwords():
     """One-time password fix endpoint"""
     from werkzeug.security import generate_password_hash
