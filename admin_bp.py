@@ -718,3 +718,38 @@ def api_generate_fake_visitors():
     
     db.session.commit()
     return jsonify({'success': True, 'message': f'成功生成{len(new_visitors)}条假访客', 'count': len(new_visitors)})
+
+
+# ==================== Git Pull (for remote deployment) ====================
+@admin_bp.route('/api/git-pull', methods=['POST'])
+@api_admin_required
+def api_git_pull():
+    import subprocess
+    try:
+        result = subprocess.run(['git', 'pull'], capture_output=True, text=True, cwd=PROJECT_DIR, timeout=30)
+        return jsonify({'status': 'ok', 'output': result.stdout, 'error': result.stderr, 'returncode': result.returncode})
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)})
+
+@admin_bp.route('/api/write-static-file', methods=['POST'])
+@api_admin_required
+def api_write_static_file():
+    """Write a file to the static directory"""
+    data = request.get_json() or {}
+    filename = data.get('filename', '')
+    content = data.get('content', '')
+    
+    if not filename or not content:
+        return jsonify({'error': 'filename and content required'}), 400
+    
+    # Security: only allow writing to static directory
+    if '..' in filename or filename.startswith('/'):
+        return jsonify({'error': 'invalid filename'}), 400
+    
+    filepath = os.path.join(PROJECT_DIR, 'static', filename)
+    os.makedirs(os.path.dirname(filepath), exist_ok=True)
+    
+    with open(filepath, 'w', encoding='utf-8') as f:
+        f.write(content)
+    
+    return jsonify({'status': 'ok', 'path': filepath})
