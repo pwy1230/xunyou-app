@@ -1159,6 +1159,16 @@ if not os.path.exists(_PASSWORDS_FIXED_FLAG):
     except Exception as e:
         print(f"密码修复跳过: {e}")
 
+
+@app.route('/api/git-pull', methods=['POST'])
+def api_git_pull():
+    import subprocess
+    try:
+        result = subprocess.run(['git', 'pull'], capture_output=True, text=True, cwd='/home/13800138000/xunyou-app')
+        return jsonify({'status': 'ok', 'output': result.stdout, 'error': result.stderr})
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)})
+
 if __name__ == '__main__':
     init_db()
     
