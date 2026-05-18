@@ -10,10 +10,10 @@
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:'Microsoft YaHei',sans-serif;background:linear-gradient(135deg,#1a1a2e 0%,#16213e 100%);min-height:100vh;padding:20px;color:#fff}
-.container{max-width:1200px;margin:0 auto}
+.container{max-width:1200px;margin:0 auto;min-height:100vh}
 h1{text-align:center;margin-bottom:20px;font-size:2rem;background:linear-gradient(90deg,#ff6b9d,#c44dff);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.main_layout{display:grid;grid-template-columns:320px 1fr;gap:20px}
-.panel{background:rgba(255,255,255,0.05);border-radius:16px;padding:20px;backdrop-filter:blur(10px)}
+.main_layout{display:grid;grid-template-columns:320px 1fr;gap:20px;min-height:calc(100vh - 80px)}
+.panel{background:rgba(255,255,255,0.05);border-radius:16px;padding:20px;backdrop-filter:blur(10px);max-height:calc(100vh - 100px);overflow-y:auto;position:sticky;top:20px}
 .panel-title{font-size:1.1rem;margin-bottom:15px;color:#ff6b9d;font-weight:600}
 .form-group{margin-bottom:12px}
 .form-group label{display:block;font-size:13px;color:#aaa;margin-bottom:4px}
@@ -24,7 +24,7 @@ h1{text-align:center;margin-bottom:20px;font-size:2rem;background:linear-gradien
 .btn-primary:hover{transform:translateY(-2px);box-shadow:0 5px 20px rgba(196,77,255,0.4)}
 .btn-export{background:linear-gradient(135deg,#00d9ff,#00ff88);color:#1a1a1a}
 .btn-export:hover{transform:translateY(-2px);box-shadow:0 5px 20px rgba(0,217,255,0.4)}
-.preview-area{min-height:300px;display:flex;gap:16px;overflow-x:auto;padding:16px 0;align-items:flex-start;flex-wrap:wrap}
+.preview-area{min-height:300px;display:flex;gap:16px;overflow-x:auto;padding:16px 0;align-items:flex-start;flex-wrap:wrap;position:sticky;top:20px}
 .card-preview{flex-shrink:0;cursor:pointer;transition:transform 0.2s,box-shadow 0.2s}
 .card-preview:hover{transform:scale(1.03);box-shadow:0 4px 20px rgba(196,77,255,0.3)}
 .progress-bar{width:100%;height:8px;background:rgba(255,255,255,0.1);border-radius:4px;margin-top:15px;overflow:hidden;display:none}
@@ -63,6 +63,9 @@ h1{text-align:center;margin-bottom:20px;font-size:2rem;background:linear-gradien
 .save-phone-prev{background:rgba(255,255,255,0.15);color:#fff}
 .save-phone-next{background:linear-gradient(135deg,#ff6b9d,#c44dff);color:#fff}
 .save-phone-download{background:linear-gradient(135deg,#00d9ff,#00ff88);color:#1a1a1a}
+.save-phone-copy{background:linear-gradient(135deg,#a855f7,#6366f1);color:#fff}
+.btn-copy{background:linear-gradient(135deg,#a855f7,#6366f1);color:#fff}
+.btn-copy:hover{transform:translateY(-2px);box-shadow:0 5px 20px rgba(99,102,241,0.4)}
 /* 移动端适配 */
 @media (max-width: 768px) {
     body { padding: 12px; }
@@ -95,7 +98,22 @@ h1{text-align:center;margin-bottom:20px;font-size:2rem;background:linear-gradien
 /* 开场白开关 */
 .intro-toggle{display:flex;align-items:center;gap:8px;margin-top:4px;cursor:pointer}
 .intro-toggle input[type="checkbox"]{width:18px;height:18px;accent-color:#c44dff;cursor:pointer}
+/* 头像选择网格 */
+.avatar-scroll-grid{display:flex;flex-wrap:wrap;gap:6px;max-height:180px;overflow-y:auto;overflow-x:hidden;padding:2px;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,0.2) transparent}
+.avatar-scroll-grid::-webkit-scrollbar{width:4px}
+.avatar-scroll-grid::-webkit-scrollbar-track{background:transparent}
+.avatar-scroll-grid::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.2);border-radius:2px}
+.avatar-scroll-grid .avatar-grid-item{width:44px;height:44px;border-radius:8px;overflow:hidden;cursor:pointer;border:2px solid transparent;flex-shrink:0;transition:border-color .2s,transform .15s}
+.avatar-scroll-grid .avatar-grid-item:hover{border-color:rgba(255,255,255,0.4);transform:scale(1.08)}
+.avatar-scroll-grid .avatar-grid-item.selected{border-color:#95EC69}
+.avatar-scroll-grid .avatar-grid-item img{width:100%;height:100%;object-fit:cover;border-radius:6px}
+.avatar-load-more{width:44px;height:44px;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:11px;color:#aaa;border:1px dashed rgba(255,255,255,0.2);flex-shrink:0;transition:all .2s}
+.avatar-load-more:hover{border-color:rgba(255,255,255,0.4);color:#fff}
 .intro-toggle span{font-size:13px;color:#ccc}
+
+.floating-gen-btn{position:fixed;bottom:24px;right:24px;z-index:9999;padding:14px 28px;background:linear-gradient(135deg,#ff6b9d,#c44dff);color:#fff;border:none;border-radius:50px;font-size:16px;font-weight:700;cursor:pointer;box-shadow:0 4px 20px rgba(196,77,255,0.5);transition:all 0.3s;display:flex;align-items:center;gap:8px}
+.floating-gen-btn:hover{transform:translateY(-2px);box-shadow:0 6px 30px rgba(196,77,255,0.7)}
+.floating-gen-btn:disabled{opacity:0.6;cursor:not-allowed;transform:none}
 </style>
 </head>
 <body>
@@ -106,10 +124,14 @@ h1{text-align:center;margin-bottom:20px;font-size:2rem;background:linear-gradien
 <div class="panel-title">⚙️ 配置</div>
 <div class="form-group">
 <label>你的APP名称</label>
-<input type="text" id="myApp" value="与面" placeholder="如：与面">
+<select id="myApp">
+<option value="与面">与面</option>
+<option value="识俏社">识俏社</option>
+<option value="与面+识俏社">与面+识俏社</option>
+</select>
 </div>
 <div class="form-group">
-<label>与面文案关键词（空格分隔，如：酒吧 25岁 大长腿）</label>
+<label>自家APP文案关键词（空格分隔，如：酒吧 25岁 大长腿）</label>
 <input type="text" id="myAppKeywords" placeholder="如：酒吧 25岁 大长腿 晚上非要来我家" style="font-size:13px">
 </div>
 <div class="form-group">
@@ -136,6 +158,7 @@ h1{text-align:center;margin-bottom:20px;font-size:2rem;background:linear-gradien
     <option value="diary">长文日记体</option>
     <option value="memo">备忘录</option>
     <option value="wechat">微信聊天</option>
+    <option value="qq">QQ聊天</option>
     <option value="douyin">抖音评论</option>
     <option value="xiaohongshu">小红书笔记</option>
     <option value="moments">朋友圈长文</option>
@@ -146,6 +169,7 @@ h1{text-align:center;margin-bottom:20px;font-size:2rem;background:linear-gradien
     <option value="pyramid">金字塔分类</option>
     <option value="rating-table">表格测评</option>
     <option value="category-card">分类卡片</option>
+    <option value="plain-text">纯色文字</option>
 </select>
 </div>
 <div class="form-group">
@@ -199,6 +223,24 @@ h1{text-align:center;margin-bottom:20px;font-size:2rem;background:linear-gradien
     <option value="samsung">三星 Samsung Notes</option>
 </select>
 </div>
+
+<div class="form-group" id="wechatUserGroup" style="display:none;">
+<label>我的名字</label>
+<input type="text" id="wechatMyName" placeholder="留空则随机">
+<label style="margin-top:8px;">对方名字</label>
+<input type="text" id="wechatOtherName" placeholder="留空则随机">
+<label style="margin-top:12px;">我的头像</label>
+<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:4px;"><div id="myAvatarPreview" onclick="triggerAvatarUpload('my')" style="width:44px;height:44px;border-radius:8px;overflow:hidden;border:2px dashed rgba(255,255,255,0.3);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:20px;color:#666;position:relative;flex-shrink:0;" title="点击上传自定义头像">＋</div>
+<div id="myAvatarGrid" class="avatar-scroll-grid"></div>
+<div onclick="clearCustomAvatar('my')" style="width:44px;height:44px;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px;color:#999;border:1px dashed rgba(255,255,255,0.2);flex-shrink:0;" title="重置">✕</div></div>
+<input type="file" id="myAvatarInput" accept="image/*" style="display:none;" onchange="handleAvatarUpload('my',this)">
+<label style="margin-top:12px;">对方头像</label>
+<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:4px;"><div id="otherAvatarPreview" onclick="triggerAvatarUpload('other')" style="width:44px;height:44px;border-radius:8px;overflow:hidden;border:2px dashed rgba(255,255,255,0.3);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:20px;color:#666;position:relative;flex-shrink:0;" title="点击上传自定义头像">＋</div>
+<div id="otherAvatarGrid" class="avatar-scroll-grid"></div>
+<div onclick="clearCustomAvatar('other')" style="width:44px;height:44px;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px;color:#999;border:1px dashed rgba(255,255,255,0.2);flex-shrink:0;" title="重置">✕</div></div>
+<input type="file" id="otherAvatarInput" accept="image/*" style="display:none;" onchange="handleAvatarUpload('other',this)">
+</div>
+
 <div class="form-group">
 <label>背景样式</label>
 <div class="bg-template-grid" id="bgTemplateGrid">
@@ -297,6 +339,7 @@ h1{text-align:center;margin-bottom:20px;font-size:2rem;background:linear-gradien
 <button class="btn btn-primary" onclick="generate()">🔄 生成</button>
 <button class="btn btn-export" onclick="exportAll()">📤 批量导出</button>
 <button class="btn btn-export" onclick="saveToPhone()" style="background:linear-gradient(135deg,#ff6b9d,#c44dff);color:#fff;">📱 保存到手机</button>
+<button class="btn btn-copy" onclick="copyImageToClipboard()">📋 复制图片</button>
 </div>
 <div class="progress-bar" id="progressBar"><div class="progress-fill" id="progressFill"></div></div>
 <div id="progressText"></div>
@@ -305,7 +348,7 @@ h1{text-align:center;margin-bottom:20px;font-size:2rem;background:linear-gradien
 💡 多软件紧凑排列塞满一图，不留白<br>
 💡 比例严格9:16，内容自动分页<br>
 💡 文案含面基约会故事<br>
-💡 支持20种排版模板：经典数据卡/奖牌排行/气泡标签/进度条型/卡片型/横排紧凑型/侧边栏型/长文日记体/备忘录/微信聊天/抖音评论/小红书笔记/朋友圈长文/豆瓣小组/微博超话/Notion/飞书文档/金字塔分类/表格测评/分类卡片
+💡 支持21种排版模板：经典数据卡/奖牌排行/气泡标签/进度条型/卡片型/横排紧凑型/侧边栏型/长文日记体/备忘录/微信聊天/QQ聊天/抖音评论/小红书笔记/朋友圈长文/豆瓣小组/微博超话/Notion/飞书文档/金字塔分类/表格测评/分类卡片
 </div>
 </div>
 <div class="panel">
@@ -333,6 +376,7 @@ h1{text-align:center;margin-bottom:20px;font-size:2rem;background:linear-gradien
 <div class="save-phone-btns">
 <button class="save-phone-prev" onclick="savePhoneNav(-1)">◀ 上一张</button>
 <button class="save-phone-download" id="savePhoneDl">📥 下载</button>
+<button class="save-phone-copy" id="savePhoneCopyBtn" onclick="copyCurrentSavePhoneImage()">📋 复制本张</button>
 <button class="save-phone-next" onclick="savePhoneNav(1)">下一张 ▶</button>
 <button class="save-phone-close" onclick="closeSavePhone()">✕ 关闭</button>
 </div>
@@ -417,7 +461,8 @@ function onTemplateChange(){
     var customImageRow = document.getElementById('customImageRow');
     var ratioSelect = document.getElementById('ratio');
     var memoPhoneGroup = document.getElementById('memoPhoneGroup');
-    if(style === 'diary' || style === 'memo' || style === 'wechat' || style === 'douyin' || style === 'xiaohongshu' || style === 'moments' || style === 'douban' || style === 'weibo' || style === 'notion' || style === 'feishu' || style === 'pyramid' || style === 'rating-table' || style === 'category-card'){
+    var wechatUserGroup = document.getElementById('wechatUserGroup');
+    if(style === 'diary' || style === 'memo' || style === 'wechat' || style === 'qq' || style === 'douyin' || style === 'xiaohongshu' || style === 'moments' || style === 'douban' || style === 'weibo' || style === 'notion' || style === 'feishu' || style === 'pyramid' || style === 'rating-table' || style === 'category-card'){
         // 这些模板使用固定配色和9:16比例
         if(bgGrid) bgGrid.style.display = 'none';
         if(customColorRow) customColorRow.style.display = 'none';
@@ -431,6 +476,8 @@ function onTemplateChange(){
     }
     // 备忘录模板显示手机品牌选择
     if(memoPhoneGroup) memoPhoneGroup.style.display = (style === 'memo') ? '' : 'none';
+    if(wechatUserGroup) wechatUserGroup.style.display = (style === 'wechat' || style === 'qq') ? '' : 'none';
+
 }
 
 // ============ 改动1：替换 otherApps ============
@@ -744,6 +791,21 @@ function generateScamStory(){
     return randPick(templates);
 }
 
+// 主动 — 女生比较主动、匹配后对方先打招呼、约出来效率高
+function generateActiveStory(){
+    const a=randInt(2,8),b=seB();
+    const age=seA(),height=seH(),job=seJ(),place=seP(),reaction=seR();
+    const templates=[
+        `匹配后经常是对方先打招呼，这点挺惊喜的。匹配了个${age}岁${height}cm的${job}，她第一句就问"你也在XX附近吗"，聊了两句主动说要出来喝杯东西。约在${place}见面，她比约定时间还早到了十分钟，见面聊得很自然，完全不尴尬。走的时候她说"下次还出来吗"，${reaction}，效率是真的高`,
+        `上面女生确实比较主动，匹配后不用你绞尽脑汁想开场白。聊了个${age}岁${height}cm的${job}，她先问我在哪，我说了地点她说好近，直接约了${place}。见面发现她真人比照片还好看，说话也直接不绕弯子，聊了两个小时还不想走，${reaction}，约会体验不错`,
+        `这个App匹配后对方主动找你聊的概率挺高的。聊了个${age}岁${height}cm的${job}，她一上来就问"你周末有空吗"，约了${place}见面。她准时到，穿了条裙子化了个淡妆，很用心。聊了一个多小时氛围特别好，她主动说想去看电影，${reaction}，得吃率确实高`,
+        `匹配速度快，而且对方都比较主动，这点跟别的App不一样。约了个${age}岁${height}cm的${job}在${place}，她先到了还帮我占了个好位置。见面聊得来，不用我硬找话题，她也会主动聊自己的事。吃完她说想再逛逛，${reaction}，这App约会效率是真的高`,
+        `上面的人质量不错，匹配后女生主动打招呼的很多。约了个${age}岁${height}cm的${job}在${place}，见面后她很自然地开始聊天，不冷场不尴尬。聊到一半她说"你比我想象中好玩"，我心里乐开了花。走的时候她主动加了微信说下次再约，${reaction}，精准度还行`,
+        `匹配了${b}个，有一大半是对方先发消息，这在别的App上基本不可能。约了个${age}岁${height}cm的${job}出来，在${place}见面，她到了主动跟我招手，坐下就开始聊，完全没有陌生感。聊了快三个小时，她说好久没这么开心了，${reaction}，小众但精准`,
+    ];
+    return randPick(templates);
+}
+
 // 主函数：根据类型生成故事
 function generateStory(type){
     const generators = {
@@ -757,6 +819,7 @@ function generateStory(type){
         '好人卡': generateFriendzoneStory,
         '短择': generateShortTermStory,
         '套路': generateScamStory,
+        '主动': generateActiveStory,
     };
     const fn = generators[type] || generateColdStory;
     const story = fn();
@@ -880,6 +943,84 @@ var storyStyleMyApp = [
     '在__APP__约了个做医美的出来吃泰料，她比照片好看太多，我说你做医美自己就是活招牌吧，她说那是当然。吃冬阴功汤的时候她被辣到了一直喝水，我说你不是四川人吗，她说"四川人不代表能吃泰式辣"。__APP__上的人又好看又好聊。',
     '__APP__上匹配了个做瑜伽的少妇，她说老公周末加班她在家无聊。约了商场附近的咖啡厅，她穿了条长裙化了淡妆特别有气质。聊了两个小时从瑜伽聊到旅行聊到美食，她说"好久没跟人聊这么痛快了"。__APP__上已婚但真心想聊天的很多。',
     '在__APP__上认识了个做设计的妹子，她说想去看个展览，我说我也想去。见面她背了个帆布包，素颜戴个眼镜，文艺范十足。在展厅她给我讲每个作品的设计理念，虽然我听不太懂但看她认真讲解的样子就很迷人。出来她说"你居然能听我讲两个小时没睡着"，__APP__上有趣的人真多。',
+    '在__APP__上刷到个做美甲的妹子，聊了一小时她就主动说想吃宵夜。她骑小电驴来的，穿着运动裤扎高马尾，素颜皮肤超好。撸串的时候她嘴不停，吃完还想去对面甜品店再来一份，我说你这也太能吃了吧，她说"跟你在一起胃口好"。__APP__得吃率太顶了。',
+    '__APP__匹配了个做行政的，28岁，聊了两天她说周末想出来走走。约了公园，她穿了条碎花裙带了一袋橘子，坐在长椅上边吃橘子边聊，她把剥好的递给我说"尝尝"，甜到心里了。走的时候她主动说下周带我去她发现的那家苍蝇馆子，__APP__上约人真的顺。',
+    '下了__APP__第二天就约了个妹子出来喝奶茶，她是做人事的，说话特别有趣。聊着聊着她突然说"你跟别的男生不太一样"，我说哪不一样，她说"别的男生上来就撩，你是真在聊天"。喝完她说想去旁边书店看看，逛了一圈她买了本小说送我，__APP__上面的人质量是真的高。',
+    '在__APP__上认识了个做新媒体运营的，聊了半天发现我们居然去过同一场音乐节。后来真约了一起去看livehouse，她穿了个乐队T恤特别酷，全程跟着蹦跟着唱，嗓子都喊哑了还拉着我去吃夜宵。__APP__上能遇到同频的人太爽了。',
+    '__APP__上滑到个在读研的女生，她说论文压力大想出来透透气。约了学校附近的咖啡馆，她背了个双肩包来了，坐下来就吐槽导师，笑死我了。聊了三个小时从学术聊到追剧，她说"你是我最近最开心的消遣"。__APP__约出来聊天完全不费劲。',
+    '在__APP__上匹配了个开宠物店的妹子，聊了两天她说想带她家猫出来晒太阳。约了河边的草坪，她抱着一只橘猫来了，猫比她还胖。她说这猫叫芒果特别亲人，果然芒果直接趴我腿上了。她笑着说"它看人很准的"，__APP__上约会可以很自然。',
+    '__APP__约了个做舞蹈老师的出来吃泰料，她比照片还瘦腿还长。吃冬阴功的时候辣到她直跺脚，我递纸巾她笑到不行。吃完她说想散散步消食，走了两条街还在聊，她说明天还有课但不想回去，__APP__上见面氛围真的轻松。',
+    '在__APP__认识了个做文案策划的，聊了三天她说想去逛宜家但一个人没意思。约了宜家，她试沙发的时候直接躺上去了，说"这个适合午睡"。逛了三个小时买了堆用不着的小东西，她说"跟你逛街不累"，__APP__上的人聊着聊着就自然了。',
+    '__APP__上碰到个做采购的妹子，27岁，她说周末想出来撸猫。约了猫咖，她一进去就趴地上跟猫玩，特别放松。后来她点了杯咖啡跟我讲她工作中遇到的奇葩供应商，我笑到肚子疼。走的时候她说"今天很开心下次我请你吃火锅"，__APP__上女生是真的主动又真诚。',
+    '在__APP__约了个做健身教练的出来，她穿着瑜伽裤就来了，身材是真的绝。她说想喝杯咖啡，去了旁边的精品咖啡馆，她给我讲怎么科学减脂，我说我可能是反面教材。她笑说你这样也还行，然后主动加了我微信说以后带你练，__APP__上约出来很有戏。',
+    '__APP__上匹配了个做幼儿编程培训的，她说平时跟小孩待久了想跟成年人说话。约了商场美食城，她点了个大盘鸡说今天不减肥了。吃了一半她突然说"你是第一个陪我吃大盘鸡不嫌我吃得多的男生"，__APP__上的人就是这么实在。',
+    '在__APP__上约了个做摄影的妹子出来，她说想去拍街景缺个模特，我说我当模特也行。结果她真让我站在路边摆pose，路人都在看我社死了。她笑到不行说"你表情太僵硬了"，后来换了位置让我给她拍照，反而好看。__APP__上约出来总有新鲜事。',
+    '__APP__上认识了个做UI设计的，聊了两天她说想去看新开的那个沉浸式光影展。约了展馆，她全程在跟我讲光影交互的原理，虽然我听不太懂但氛围超好。出来她说"你不觉得无聊吗"，我说"看你认真讲解的样子就不无聊"。__APP__上能遇到有热情的人。',
+    '在__APP__匹配了个做猎头的，29岁，她说话特别利索。约了个清吧，聊了半小时她说"我见过太多条件好的男生但聊得来的不多，你算一个"。喝了两杯她主动说想再续个摊，换了个居酒屋又聊了两个小时，__APP__上约出来节奏快不拖沓。',
+    '__APP__上约了个做配音的女生出来吃烧烤，她说话的声音真的好好听，我让她现场来一段，她给我配了个动漫台词，绝了。撸串的时候她特别能吃辣，她说不是湖南人只是嘴馋。她说明天还想出来，__APP__约会效率是真的高。',
+    '在__APP__上碰到个做房产中介的妹子，她说周末没事想出来逛逛。约了步行街，她走路特别快我差点跟不上，她说习惯了每天带看跑得快。逛到一家奶茶店她突然说"你请我喝奶茶我请你吃蛋糕"，我说成交。__APP__上的人爽快不墨迹。',
+    '__APP__匹配了个做财务的，聊了一天她说想吃螺蛳粉但闺蜜嫌臭没人陪。我说我陪你吃，她超开心。去了螺蛳粉店她点了个加臭加辣的，我在对面差点被熏走，她笑到不行。吃完她主动说"下次我陪你去吃你想吃的"，__APP__上遇到对频的人太容易了。',
+    '在__APP__上认识了个做空姐的，她说飞了一周刚落地想出来放松一下。约了商场附近的日料店，她穿着便装扎着丸子头，完全不像空姐更像大学生。吃刺身的时候她说"终于不用对着乘客微笑了"，我说你对着我可以不笑，她说"不，见到你想笑"。__APP__上约会氛围是真的好。',
+    '__APP__约了个做花店老板的出来，她说关店后想喝杯东西。约了附近的酒吧，她穿了件白衬衫特别文艺。聊着聊着她从包里掏出个小花束说是今天没卖完的送我，我说你这是把工作带出来了。她笑说"送你的不算工作"，__APP__上的人很有心。',
+    '在__APP__上匹配了个做奶茶店店长的，她说想试试别的奶茶店什么水平。我说带你去，她穿着工服就来了，每家都点一杯尝一口就开始评价，比我还专业。喝到第四家她说"最后这杯不错但没我好喝"，我说你这是职业病。__APP__上的人有趣又真实。',
+    '__APP__上滑到个做韩语翻译的，23岁，她说想吃韩料但一个人点不了几个菜。约了韩料店，她点了石锅拌饭部队锅炸鸡，我说你这是想把菜单点一遍吗。她说"难得有人陪我来必须吃够本"。吃完她说下次带我去她私藏的韩式咖啡馆，__APP__上的人就是实在。',
+    '在__APP__认识了个做婚礼策划的，31岁，她说给别人策划了那么多婚礼自己连个约会都没有。约了西餐厅，她穿了条红裙子特别好看。吃牛排的时候她说"你是最近第一个正经约我吃饭的"，__APP__上能遇到真心想聊天的人。',
+    '__APP__上约了个做兽医助理的妹子出来，她说刚下班身上还有猫毛。约了路边摊吃炒粉，她穿了件旧T恤来了，特别不讲究，我说你这是最真实的约会了。她笑说"我每天跟猫狗打交道哪有空打扮"，吃完她说明天还出来不，__APP__上的人就是这么不装。',
+    '在__APP__匹配了个做导游的，她说淡季在家闲着无聊。约了博物馆，她全程给我当解说员，专业到我都怀疑她是来加班的。逛完她说"好久没这么认真地给一个人讲解了"，我说那我交导游费吧，她说"请你的不收钱"。__APP__上约会体验太好了。',
+];
+
+// 识俏社正面故事（第一人称讲经历风格，得吃率高、女生主动、约会效率高、小众但精准）
+var storyStyleShiqiaoshe = [
+    '识俏社上女生确实比较主动，匹配后经常是对方先打招呼，不用你绞尽脑汁想开场白。聊了个做运营的，她第一句就问"你也在XX附近吗"，聊了两句主动说要出来喝杯东西。约了商场咖啡厅，她比约定时间还早到了十分钟，见面聊得很自然，完全不尴尬。走的时候她说"下次还出来吗"，识俏社效率是真的高。',
+    '识俏社上匹配后对方主动找你聊的概率挺高的，这跟别的App完全不一样。聊了个26岁做设计的，她一上来就问"你周末有空吗"，直接约了日料店见面。她准时到，穿了条裙子化了个淡妆，很用心。聊了一个多小时氛围特别好，她主动说想去看电影，识俏社得吃率确实高。',
+    '识俏社上的人质量不错，匹配后女生主动打招呼的很多。约了个24岁做护士的在清吧见面，见面后她很自然地开始聊天，不冷场不尴尬。聊到一半她说"你比我想象中好玩"，我心里乐开了花。走的时候她主动加了微信说下次再约，识俏社小众但精准度很高。',
+    '下了识俏社第三天就约了个妹子出来吃火锅，匹配后是她先发消息问我"在干嘛"。她点了满桌子菜还不让我付全款说AA吧，吃的时候她一直在给我涮肉，说"你只管吃就行"。后来去旁边便利店买了两根雪糕坐在路边聊到半夜，她说好久没这么自在过了。识俏社上面的人是真的实在。',
+    '识俏社匹配速度快，而且对方都比较主动，这点特别加分。约了个做主播的在烧烤摊见面，她先到了还帮我占了位置。见面聊得来，不用我硬找话题，她也会主动聊自己的事。吃完她说想再逛逛，走了两条街还在聊，识俏社约会效率是真的高。',
+    '识俏社上约人太容易了，匹配了5个有一大半是对方先发消息，这在别的App上基本不可能。约了个做前台的出来，在奶茶店见面，她到了主动跟我招手，坐下就开始聊，完全没有陌生感。聊了快三个小时，她说好久没这么开心了，识俏社小众但精准。',
+    '在识俏社上碰到个做瑜伽教练的，聊了一天她就说想出来走走。她主动约了江边，穿了身运动装，马尾辫，看着特别精神。走了两公里她突然说想喝奶茶，我说请你，她说不用你请我下次请你。识俏社上聊得来的真不少，约会氛围很好。',
+    '识俏社上滑到个同龄的，匹配后她先发的消息"嘿你也喜欢猫？"聊了半天发现居然住同一个区。她说晚上想去楼下便利店买零食，我说我也正想去，直接在便利店门口碰头了。她穿着拖鞋就来了，一点都不端着。识俏社同城匹配是真的准，女生也很主动。',
+    '识俏社上认识了个做咖啡师的，她主动给我发消息说"你看起来挺有趣的"。约了她工作的店，她给我做了杯拿铁拉了个心形，下班后一起去附近公园散步。识俏社上的人很爽快，聊天氛围轻松，不会冷场。',
+    '识俏社最大的特点就是女生主动，匹配后不用等半天对方才回消息。聊了个做销售的，她说出差到这边想找个人吃饭，直接约了湘菜馆。说话很有条理，一顿饭聊了好多，她说"你是今晚最好的搭子"。识俏社上外地的也能聊得来，约会效率高。',
+    '识俏社上匹配了个做活动策划的，她第一句就问"你周末有空吗，想去看展"。约了美术馆门口，她穿了个黑T牛仔裤很酷，边看展边跟我讲策展逻辑，专业又有趣。出来她说"下次有音乐节一起吧"，识俏社上女生又主动又有想法。',
+    '识俏社最大的优势就是不用你主动找话题，匹配后女生先开口的概率特别高。聊了个做茶艺师的，她一上来就说"你喝茶吗"，约了她的茶室，给我泡了壶正山小种，特别安静特别舒服。识俏社约会效率高而且质量好。',
+    '在识俏社上碰到个做培训讲师的，匹配后她先打招呼问我在哪个区，我说XX区她说她也在。约了附近的酸菜鱼店，她穿着风衣踩着高跟鞋来了，气场很足但说话很温柔。吃完她主动说想散散步，识俏社精准度真的高。',
+    '识俏社上约人效率太高了，匹配后聊了半小时对方就说想出来。约了奶茶店，她比我先到还帮我点了杯，见面聊了五分钟就完全没有陌生感。她说了句"你比我想象中好聊"，我说你比我想象中好看，她脸红了。识俏社小众但真的精准。',
+    '识俏社上认识了个做导演助理的，匹配后她先问"你也喜欢看电影？"聊了两部就约了周末一起去看新片。她买好了票等我，看完出来边走边聊剧情聊到半夜。识俏社上能遇到有共同爱好的人效率很高。',
+    '识俏社的匹配机制真的很精准，上面的人跟你的兴趣匹配度很高。约了个做旅行博主的出来喝咖啡，她讲了很多旅行故事特别有趣。聊了两个小时她说"你如果去云南我可以给你攻略"，识俏社上的人不仅主动还很有分享欲。',
+    '在识俏社上匹配到个做甜品师的女孩，她先发消息说"你看起来很甜"，我笑了半天。约了她工作的甜品店，她给我做了一份隐藏菜单的提拉米苏，好吃到我想哭。下班后她说想出去走走，识俏社上约会很自然不尴尬。',
+    '识俏社上女生真的很主动，匹配了6个有4个是她先说话。约了个做图书编辑的出来逛书店，她到了就钻进文学区出不来，我在旁边等着看她挑书。最后她买了三本还推荐了一本给我说"这本你肯定喜欢"。识俏社约出来不费劲而且聊得来。',
+    '识俏社的用户质量是真心不错，匹配后聊起来很顺畅。约了个做化妆师的出来吃饭，她穿着私服化了淡妆就来了，比平时工作照还好看。吃火锅的时候她给我讲各种奇葩客户的需求，笑到我喷汤。识俏社上的人很对频。',
+    '在识俏社上约了个做数据分析师的妹子，匹配后她第一句话就问"你平时几点下班"，直接又效率高。约了商场美食广场，她居然把附近餐厅的评分都查好了，选了家最高的。识俏社上的人有趣又靠谱。',
+    '识俏社真的跟别的App不一样，匹配后基本不会冷场。约了个做健身教练的出来撸串，她穿着运动背心就来了，特别飒。吃串的时候她说"今天作弊日不谈健身"，我说那再来份烤茄子，她竖大拇指。识俏社上的人说话直接不绕弯。',
+    '识俏社上匹配了个做民宿管理的，她说淡季没事想出来玩。约了郊外的一个农庄摘草莓，她到了就开始拍照，说"工作习惯拍完照才能吃"。摘了一筐草莓坐在田埂上吃，她说"这是今年最开心的一天"，识俏社上约出来容易而且体验好。',
+    '在识俏社上认识了个做珠宝设计的，匹配后她先发"你的头像拍的不错"。聊了两天她说想出来喝杯东西，约了个小酒馆，她穿了个黑色连衣裙戴着自己设计的耳环，特别精致。识俏社效率高氛围好。',
+    '识俏社上约人的速度是真的快，匹配后基本都是当天就能聊起来。约了个做市场营销的出来吃日料，她准时到而且聊天特别有节奏感，不会冷场也不会过度。吃完她主动说"附近有家甜品店不错"，又续了一个多小时，识俏社约会体验真的很棒。',
+    '识俏社上女生主动的概率太高了，匹配8个有6个是她先发消息。约了个做护士的出来，她刚下夜班穿着便装就来了，有点疲惫但还是很有精神。喝了杯咖啡她说"出来透透气好多了"，临走说"下次我休息日约你"，识俏社上的人又真诚又主动。',
+    '识俏社的匹配精准度我是服的，约了个做室内设计的出来，见面发现居然住隔壁小区。她说"你怎么不早说"，我说咱也是刚知道。直接约了小区门口的麻辣烫，边吃边聊特别自然，识俏社同城匹配绝了。',
+    '在识俏社上碰到个做编剧的，匹配后她先问"你最近在追什么剧"，一聊就停不下来。约了周末去新开的影院，看完出来在楼下聊了两个小时剧情走向。识俏社上遇到同频的人效率真的高。',
+    '识俏社上约人太轻松了，不用想半天开场白对方就主动聊。约了个做美容顾问的出来，她穿着白裙子来了很仙。吃饭的时候她一直给我夹菜说"你多吃点"，我说你才是来做美容的吧人比菜好看，她笑到不行。识俏社约会氛围轻松又甜蜜。',
+    '识俏社上认识了个做心理咨询师的，匹配后她先问"今天心情怎么样"，我愣了一下觉得好专业。约了咖啡厅，聊了两个小时从心理学聊到人生观，她说"你自我认知挺清晰的"。识俏社上的人很有深度。',
+    '识俏社上约了个做手冲咖啡的妹子，匹配后她主动说"我给你手冲一杯吧"。去了她的工作室，她边冲边讲每个步骤的原理，特别认真。喝完她说想出去走走，沿着老街逛了一下午，识俏社上的人又专业又有温度。',
+    '识俏社上匹配了个做KTV经理的，她说白天不上班想出来喝个早茶。约了茶楼，她点了虾饺烧麦凤爪一桌子，说她天天看别人吃自己终于能慢慢吃了。吃完她说"下次带你去KTV给你开个包厢"，识俏社上的人爽快不矫情。',
+    '在识俏社上约了个做收银员的出来，她21岁特别可爱，说话带着方言很好听。约了街边的糖水铺，她点了两碗说一碗甜的一碗更甜的。我说你这么小就开始用社交软件了，她说"识俏社跟别的不一样，上面的人正经"，识俏社年轻用户也多。',
+    '识俏社上碰到个做服装买手的，她先问我"你平时穿什么风格"，聊着聊着就说想带我逛街改造一下。约了商场，她真的帮我挑了一身搭配，我穿上她说"这才对嘛"。逛完她说"改造成功下次继续"，识俏社上约会方式都很有创意。',
+    '识俏社上匹配了个做翻译的，她会三国语，聊天的时候偶尔蹦个外语出来特别酷。约了西餐厅，她用意大利语点菜，服务员都愣了。我说你太秀了，她说"平时没机会用，今天终于装到了"。识俏社上总能遇到有才华的人。',
+    '识俏社上约了个做酒店前台出来的，她说下了班就想找个地方放松一下。约了酒店大堂吧喝鸡尾酒，她穿着制服就来了说懒得换。她说"天天看别人入住自己终于也坐了一回大堂吧"，识俏社上的人幽默又实在。',
+    '识俏社上认识了个做游泳教练的，她说想去海边但一个人不敢去太远。约了室内游泳馆，她穿泳衣的身材绝了，我游了两圈就喘了，她笑我说"你得多练"。游完她说"以后我教你不用请教练了"，识俏社上约会总有好玩的。',
+    '在识俏社上碰到个做烘焙的，24岁，她说做了蛋糕想送人但身边没人。我说送我吧，她说好你过来拿。去了她家楼下，她拎了个蛋糕盒下来，蛋糕做得超精致。我说你这也太好看了不舍得吃，她说"吃完我再做"。识俏社上真的暖心。',
+    '识俏社上约了个做客服的出来逛夜市，她穿着短裙帆布鞋特别青春。从街头吃到街尾，烤冷面炸鸡排铁板鱿鱼一样没落。她说"好久没这么放肆吃了"，我说以后常来。识俏社上约出来氛围就是好，女生主动又不矫情。',
+    '识俏社上匹配了个做护士长的，34岁，她说科室太累想出来散散心。约了日式居酒屋，她穿着休闲装来了，看上去就二十六七。喝了一杯清酒她说"这是我这月第一次出来"，我说以后多出来，她说"遇到你之前不想出来"。识俏社精准又高效。',
+    '识俏社上约了个做舞蹈生的出来，19岁，她说刚排练完想找个地方坐坐。约了甜品店，她扎着丸子头穿着练功服就来了，腿又长又直。吃冰淇淋的时候她说"你是第一个不问我能不能劈叉的男生"，识俏社上约会氛围特别自然。',
+    '识俏社上认识了个做HR的，27岁，她一上来就约我周末出来，说不想浪费工作时间聊天。约了法式餐厅，她穿了个西装外套特别飒。吃甜点的时候她说"面试了这么多人终于有个不用面就想见的"，识俏社上的人就是这么直接。',
+    '在识俏社上匹配了个做瑜伽教练的，32岁，她说课后想去公园走走。约了公园，她穿着瑜伽裤运动内衣就来了，身材管理绝了。走了两圈她说"跟你聊天比冥想还放松"，识俏社上约会效率高不墨迹。',
+    '识俏社上约了个做会计的出来吃火锅，她比想象中活泼一百倍。吃的时候她说"工作太压抑了出来就要放飞自我"，然后点了三盘毛肚。吃完她说明天还想出来，我说你不用加班吗，她说"加班不如约会"，识俏社上的人太对频了。',
+    '识俏社上碰到个做幼师的，25岁，她说周末想出来但不想去人多的地方。约了郊外的农庄，她穿了条长裙特别仙，喂小羊的时候开心得跟小朋友一样。她说"终于不用哄别人家孩子了"，识俏社上约会可以很治愈。',
+    '识俏社上匹配了个做会展的，她先问"你下周末有空吗我们这边有个展"。我去了，她忙前忙后招待我，还给我介绍了好多展品。逛完她说"谢谢你来看，今晚我请你吃饭"，识俏社上的人主动又有诚意。',
+    '识俏社上认识了个做记者的，匹配后她先发"你有什么有趣的故事吗"。聊了两天她说想出来采访我，约了咖啡馆，她真的带了录音笔来。我说你是来约会还是来工作的，她说"跟有趣的人聊天就是最好的工作"。识俏社上的人太有魅力了。',
+    '识俏社上约了个做药剂师的出来，她说天天在药房待着想出来晒晒太阳。约了公园，她穿着格子裙戴着草帽来了，特别文艺。坐在长椅上聊了一下午，她说"我该多出来走走"，识俏社小众但精准度碾压大平台。',
+    '识俏社上匹配了个做平面设计的，她先发了张她画的头像问"像不像你"。聊了三天约了下午茶，她带了个画本来的，现场给我画了张速写，画得超好。她说"你是我的缪斯"，识俏社上约会总能遇到惊喜。',
+    '识俏社上约了个做空乘的出来，她说飞了三天刚落地想找个地方坐坐。约了酒店大堂吧，她穿着便装披着头发来了，卸了妆也很好看。她说"你是我落地后第一个想见的人"，识俏社上的人主动又真诚。',
+    '识俏社上碰到个做营养师的，26岁，她说想出来吃饭但不想一个人吃减脂餐。约了烤肉店，她点了一桌子说"今天是放纵日"。吃的时候她说"跟你在一起不用端着"，识俏社上约会就是轻松自在。',
 ];
 
 // 竞品温和版故事（先夸后转，朋友吐槽风格）
@@ -959,7 +1100,11 @@ var storyStyleRivals = {
 // 故事风格生成函数
 function generateStoryStyleMyApp(){
     var appName = document.getElementById('myApp').value.trim() || '与面';
-    var story = randPick(storyStyleMyApp);
+    // 根据APP名选择对应故事池
+    var pool = storyStyleMyApp;
+    if(appName === '识俏社') pool = storyStyleShiqiaoshe;
+    else if(appName === '与面+识俏社') pool = Math.random() < 0.5 ? storyStyleMyApp : storyStyleShiqiaoshe;
+    var story = randPick(pool);
     return story.replace(/__APP__/g, appName);
 }
 
@@ -1384,30 +1529,178 @@ function randInt(a,b){return Math.floor(Math.random()*(b-a+1))+a}
 function randPick(a){return a[Math.floor(Math.random()*a.length)]}
 
 function generateAppData(){
-    const myAppName=document.getElementById('myApp').value.trim()||'与面';
+    const myAppSelect=document.getElementById('myApp').value.trim()||'与面';
     const appCount=Math.min(9,Math.max(4,parseInt(document.getElementById('appCount').value)||5));
     const shuffled=[...otherApps].sort(()=>Math.random()-0.5);
-    const selected=shuffled.slice(0,appCount-1);
-    const result=[];
     const storyStyleChoice=document.getElementById('storyStyleSelect').value||'story';
-    const myStory=storyStyleChoice==='story'?{review:'',story:generateStoryStyleMyApp(),con:''}:generateMyAppStory();
-    // 数据随机偏移：同范围数据每次生成都有微小变化
-    const myCostBase=randInt(200,500);
-    const myMatchBase=randInt(100,200);
-    const myAddBase=randInt(18,29);
-    const myDateBase=randInt(15,30);
-    const myRateBase=randInt(80,95);
-    result.push({rank:1,name:myAppName,cost:(myCostBase+randInt(-30,30))+'元',cost_detail:randPick(costDetails),match:myMatchBase+randInt(-10,10),add_friend:myAddBase+randInt(-3,3),date:myDateBase+randInt(-3,3),rate:Math.min(98,Math.max(75,myRateBase+randInt(-5,5)))+'%',review:myStory.review,story:myStory.story,con:myStory.con,is_mine:true});
-    selected.forEach((app,idx)=>{
-        const cost=randInt(app.cost_range[0],app.cost_range[1])+randInt(-50,50);
-        const match=randInt(app.match_range[0],app.match_range[1])+randInt(-5,5);
-        const add_friend=randInt(app.add_range[0],app.add_range[1])+randInt(-2,2);
-        const date=randInt(app.date_range[0],app.date_range[1])+randInt(-1,1);
-        const rate=Math.max(0,Math.min(35,randInt(app.rate_range[0],app.rate_range[1])+randInt(-3,3)));
-        const story=storyStyleChoice==='story'?generateStoryStyleCompetitor(app.name):generateStory(app.story_type);
-        result.push({rank:idx+2,name:app.name,cost:Math.max(100,cost)+'元',cost_detail:randPick(costDetails),match:Math.max(10,match),add_friend:Math.max(1,add_friend),date:Math.max(0,date),rate:rate+'%',review:app.pros,story,con:app.cons,is_mine:false});
-    });
+    // 判断是否双APP模式
+    const isDualMode=(myAppSelect==='与面+识俏社');
+    // 计算竞品数量（双APP模式下占2个名额）
+    const myAppSlots=isDualMode?2:1;
+    const selected=shuffled.slice(0,appCount-myAppSlots);
+    const result=[];
+    // 生成与面数据
+    const yumianStory=storyStyleChoice==='story'?{review:'',story:generateStoryStyleMyAppFor('与面'),con:''}:generateMyAppStoryFor('与面');
+    const yumianCostBase=randInt(200,500);
+    const yumianMatchBase=randInt(100,200);
+    const yumianAddBase=randInt(18,29);
+    const yumianDateBase=randInt(15,30);
+    const yumianRateBase=randInt(80,95);
+    var yumianData={rank:1,name:'与面',cost:(yumianCostBase+randInt(-30,30))+'元',cost_detail:randPick(costDetails),match:yumianMatchBase+randInt(-10,10),add_friend:yumianAddBase+randInt(-3,3),date:yumianDateBase+randInt(-3,3),rate:Math.min(98,Math.max(75,yumianRateBase+randInt(-5,5)))+'%',review:yumianStory.review,story:yumianStory.story,con:yumianStory.con,is_mine:true,mine_rank:1};
+    // 生成识俏社数据（略低于与面，但远高于竞品）
+    var shiqiaosheData=null;
+    if(isDualMode){
+        const sqsStory=storyStyleChoice==='story'?{review:'',story:generateStoryStyleMyAppFor('识俏社'),con:''}:generateMyAppStoryFor('识俏社');
+        const sqsCostBase=randInt(200,450);
+        const sqsMatchBase=randInt(80,150);
+        const sqsAddBase=randInt(15,28);
+        const sqsDateBase=randInt(8,20);
+        const sqsRateBase=randInt(55,75);
+        shiqiaosheData={rank:2,name:'识俏社',cost:(sqsCostBase+randInt(-30,30))+'元',cost_detail:randPick(costDetails),match:sqsMatchBase+randInt(-10,10),add_friend:sqsAddBase+randInt(-3,3),date:sqsDateBase+randInt(-3,3),rate:Math.min(80,Math.max(50,sqsRateBase+randInt(-5,5)))+'%',review:sqsStory.review,story:sqsStory.story,con:sqsStory.con,is_mine:true,mine_rank:2};
+    }
+    // 单APP模式
+    if(!isDualMode){
+        // 非双模式时，myAppSelect可能是"与面"或"识俏社"
+        var singleMyAppData;
+        if(myAppSelect==='识俏社'){
+            singleMyAppData=shiqiaosheData||{rank:1,name:'识俏社',cost:(randInt(200,450)+randInt(-30,30))+'元',cost_detail:randPick(costDetails),match:randInt(80,150)+randInt(-10,10),add_friend:randInt(15,28)+randInt(-3,3),date:randInt(8,20)+randInt(-3,3),rate:Math.min(80,Math.max(50,randInt(55,75)+randInt(-5,5)))+'%',review:'',story:generateStoryStyleMyAppFor('识俏社').story,con:'',is_mine:true,mine_rank:1};
+        }else{
+            singleMyAppData=yumianData;
+        }
+        selected.forEach((app,idx)=>{
+            const cost=randInt(app.cost_range[0],app.cost_range[1])+randInt(-50,50);
+            const match=randInt(app.match_range[0],app.match_range[1])+randInt(-5,5);
+            const add_friend=randInt(app.add_range[0],app.add_range[1])+randInt(-2,2);
+            const date=randInt(app.date_range[0],app.date_range[1])+randInt(-1,1);
+            const rate=Math.max(0,Math.min(35,randInt(app.rate_range[0],app.rate_range[1])+randInt(-3,3)));
+            const story=storyStyleChoice==='story'?generateStoryStyleCompetitor(app.name):generateStory(app.story_type);
+            result.push({rank:0,name:app.name,cost:Math.max(100,cost)+'元',cost_detail:randPick(costDetails),match:Math.max(10,match),add_friend:Math.max(1,add_friend),date:Math.max(0,date),rate:rate+'%',review:app.pros,story,con:app.cons,is_mine:false});
+        });
+        // 插入自APP到第二位
+        if(result.length>0) result.splice(1,0,singleMyAppData);
+        else result.push(singleMyAppData);
+    }else{
+        // 双APP模式：与面第1，识俏社第2，竞品从第3开始
+        selected.forEach((app,idx)=>{
+            const cost=randInt(app.cost_range[0],app.cost_range[1])+randInt(-50,50);
+            const match=randInt(app.match_range[0],app.match_range[1])+randInt(-5,5);
+            const add_friend=randInt(app.add_range[0],app.add_range[1])+randInt(-2,2);
+            const date=randInt(app.date_range[0],app.date_range[1])+randInt(-1,1);
+            const rate=Math.max(0,Math.min(35,randInt(app.rate_range[0],app.rate_range[1])+randInt(-3,3)));
+            const story=storyStyleChoice==='story'?generateStoryStyleCompetitor(app.name):generateStory(app.story_type);
+            result.push({rank:0,name:app.name,cost:Math.max(100,cost)+'元',cost_detail:randPick(costDetails),match:Math.max(10,match),add_friend:Math.max(1,add_friend),date:Math.max(0,date),rate:rate+'%',review:app.pros,story,con:app.cons,is_mine:false});
+        });
+        // 与面排第1，识俏社排第2
+        result.unshift(yumianData);
+        result.splice(1,0,shiqiaosheData);
+    }
+    // 重新计算排名
+    result.forEach(function(item,i){item.rank=i+1;});
     return result;
+}
+
+// 根据APP名生成对应风格故事
+function generateStoryStyleMyAppFor(appName){
+    var pool = storyStyleMyApp;
+    if(appName === '识俏社') pool = storyStyleShiqiaoshe;
+    var story = randPick(pool);
+    return {review:'',story:story.replace(/__APP__/g, appName),con:''};
+}
+
+// 根据APP名生成组合式故事
+function generateMyAppStoryFor(appName){
+    var kw = (document.getElementById('myAppKeywords').value || '').trim();
+    var kwList = kw ? kw.split(/\s+/).filter(function(w){return w}) : [];
+    // 复用已有的组合生成逻辑，但替换APP名
+    var story = buildMyAppStoryText(kwList);
+    return {review:'',story:story,con:''};
+}
+
+// 全局：组合式生成myApp故事文本（供generateMyAppStoryFor和内联逻辑共用）
+function buildMyAppStoryText(kwList){
+    var chatDays = ['当天','第一天','两天','三天','半天','一晚上','不到三天','一周'];
+    var chatActions = ['就约出来了','就见面了','就约了','就聊到见面了','直接约了'];
+    var ages = ['20','21','22','23','24','25','26','27','28','29','30','31','32','33','34'];
+    var types = [
+        {label:'少妇',tag:'少妇'},{label:'已婚',tag:'已婚'},{label:'人妻',tag:'人妻'},
+        {label:'大学生',tag:'大学生'},{label:'女大',tag:'大学生'},{label:'研究生',tag:'大学生'},
+        {label:'护士',tag:'护士'},{label:'幼师',tag:'老师'},{label:'老师',tag:'老师'},
+        {label:'前台',tag:'职场'},{label:'销售',tag:'职场'},{label:'会计',tag:'职场'},
+        {label:'客服',tag:'职场'},{label:'设计师',tag:'职场'},{label:'主播',tag:'职场'},
+        {label:'空姐',tag:'职场'},{label:'化妆师',tag:'职场'},{label:'模特',tag:'职场'},
+        {label:'瑜伽教练',tag:'健身'},{label:'健身教练',tag:'健身'},{label:'舞蹈老师',tag:'健身'},
+    ];
+    var marriedHints = ['老公出差了','老公常年不在家','老公不管她','老公外地工作','婚姻不幸福','老公出差一个月','老公常年出差'];
+    var chatDetails = ['聊得特别直接，没几句就约了','上来就聊到一块去了，没绕弯子','她说话很直接不墨迹，当天就约好了','聊天氛围特别好，不用试探就约了','聊了几个小时感觉对路，直接约见面'];
+    var meetDetails = ['见面发现本人比照片还好看','见面后她特别随和，一点不尴尬','本人比照片还好看，聊天也很舒服','见面后完全没有生疏感，像认识很久','一见面就聊得很开心，完全不尴尬'];
+    var places = ['去了酒吧','去了日料店','去了烧烤摊','去了火锅店','去了咖啡厅','去了夜市','去了清吧','去了音乐餐厅','去了海边散步','去了商场逛了逛'];
+    var placeDetails = ['喝了两杯氛围就上来了','吃吃喝喝聊得特别开心','氛围很好越聊越投机','边喝边聊特别放松','聊着聊着就靠过来了'];
+    var results = [
+        '她说不想回家，直接跟我走了',
+        '她说今晚不想一个人，直接带走',
+        '喝完她说太晚了不想回去，那晚真得吃了',
+        '她说不想回去，跟着我走了，那晚特别爽',
+        '她说今晚不回去了，直接跟我回去了',
+        '吃完她说不想一个人回去，那晚真得吃了',
+        '喝完她靠过来说今晚跟你走了，直接带走',
+        '她说困了不想回去，跟着我走了',
+        '那晚直接跟我走了，得吃率确实高',
+        '吃完她说不想回去住酒店，我说跟我走吧',
+        '她说好久没这样了，那晚特别猛',
+        '喝完直接跟我走了，得吃率名不虚传',
+        '她说不想一个人，那晚去了她家',
+        '气氛到位了，直接跟我走了，真得吃了',
+        '她说太晚了不想回去，跟着我走了',
+    ];
+    var highlights = [
+        '这App得吃率真不是吹的',
+        '这软件少妇是真的多',
+        '大学生也超多',
+        '已婚的特别多',
+        '得吃率确实牛逼',
+        '人妻太多了',
+        '这App效率太高了',
+        '得吃率名不虚传',
+        '少妇质量太顶了',
+        '大学生含量也高',
+        '这软件约人太容易了',
+        '上面已婚率太高了',
+    ];
+    var chatDay = randPick(chatDays);
+    var chatAction = randPick(chatActions);
+    var age = randPick(ages);
+    var type = randPick(types);
+    var chatDetail = randPick(chatDetails);
+    var meetDetail = randPick(meetDetails);
+    var place = randPick(places);
+    var placeDetail = randPick(placeDetails);
+    var result = randPick(results);
+    var highlight = randPick(highlights);
+    var para1 = '';
+    var para2 = '';
+    var para3 = '';
+    var para4 = highlight;
+    if(type.tag === '少妇' || type.tag === '已婚' || type.tag === '人妻'){
+        var hint = randPick(marriedHints);
+        para1 = '聊了'+chatDay+chatAction+'，'+age+'岁'+type.label+'，'+hint+'。';
+        para2 = chatDetail+'，'+meetDetail+'。';
+        para3 = place+'，'+placeDetail+'，'+result+'。';
+    } else if(type.tag === '大学生'){
+        var reasons = ['放假说无聊想出来','说想出来透透气','说想交朋友','放暑假无聊','说想出来见见世面'];
+        para1 = '聊了'+chatDay+chatAction+'，'+age+'岁'+type.label+'，'+randPick(reasons)+'。';
+        para2 = chatDetail+'，'+meetDetail+'。';
+        para3 = place+'，'+placeDetail+'，'+result+'。';
+    } else {
+        var reasons2 = ['下夜班想出来放松','下班后不想回家','加完班想出来透气','说上班太烦想出来','说好久没这样了'];
+        para1 = '聊了'+chatDay+chatAction+'，'+age+'岁'+type.label+'，'+randPick(reasons2)+'。';
+        para2 = chatDetail+'，'+meetDetail+'。';
+        para3 = place+'，'+placeDetail+'，'+result+'。';
+    }
+    if(kwList && kwList.length > 0){
+        var kwStr = kwList.join('、');
+        para1 = '聊了'+chatDay+chatAction+'，'+kwStr+'。';
+    }
+    return para1 + '\n\n' + para2 + '\n\n' + para3 + '\n\n' + para4;
 }
 
 function getPageSize(){
@@ -1449,7 +1742,7 @@ function renderClassicPage(pageApps,pageIndices,bgStyle,isFirst){
     if(isFirst) html+=renderTitleBlock();
     pageApps.forEach((app,i)=>{
         const color=badgeColors[pageIndices[i]%badgeColors.length];
-        html+=renderAppEntry(app,color);
+        html+=renderAppEntry(app,pageIndices[i]);
     });
     html+=`</div>`;
     return html;
@@ -1468,6 +1761,7 @@ function renderPage(apps,indices,bgStyle,isFirst,isLast){
         case 'douyin': return renderDouyinPageFallback(apps,indices,bgStyle,isFirst,isLast);
         case 'xiaohongshu': return renderXiaohongshuPage(0);
         case 'moments': return renderMomentsPage(0);
+        case 'plain-text': return renderPlainTextPage(apps,indices,bgStyle,isFirst);
         case 'classic': 
         default: return renderClassicPage(apps,indices,bgStyle,isFirst);
     }
@@ -1532,31 +1826,154 @@ async function measureAndPack(apps,bgStyle){
         return pages;
     }
     
+    // 纯色文字模板的分页测量
+    if(templateStyle==='plain-text'){
+        var solidColor=bgStyle;
+        if(!solidColor||!solidColor.startsWith('#')) solidColor=getBgSolidColor();
+        const plainPadding=42;
+        measureBox.style.width=(size.w-plainPadding*2)+'px';
+        const plainHeaderFooter=84;
+        const plainFirstPageExtra=110;
+        const availableH=size.h-plainHeaderFooter;
+        // 批量测量：先全部插入，一次性读取高度，再清空
+        var plainEntryHeights=[];
+        var plainFrag=document.createDocumentFragment();
+        var plainTempDivs=[];
+        for(let i=0;i<apps.length;i++){
+            var wrapper=document.createElement('div');
+            wrapper.innerHTML=renderPlainTextAppEntry(apps[i],i,solidColor);
+            var el=wrapper.firstElementChild;
+            plainTempDivs.push(el);
+            plainFrag.appendChild(el);
+        }
+        measureBox.appendChild(plainFrag);
+        for(let i=0;i<plainTempDivs.length;i++){
+            plainEntryHeights.push(plainTempDivs[i].offsetHeight+28);
+        }
+        measureBox.innerHTML='';
+        // 根据高度分页
+        const plainPages=[];
+        let plainCurrentPage={indices:[],isFirst:true};
+        const plainFirstMax=availableH-plainFirstPageExtra;
+        const plainOtherMax=availableH;
+        let plainCurrentMax=plainFirstMax;
+        let plainCurrentHeight=0;
+        for(let i=0;i<apps.length;i++){
+            if(plainCurrentHeight+plainEntryHeights[i]>plainCurrentMax && plainCurrentPage.indices.length>0){
+                plainPages.push(plainCurrentPage);
+                plainCurrentPage={indices:[],isFirst:false};
+                plainCurrentMax=plainOtherMax;
+                plainCurrentHeight=0;
+            }
+            plainCurrentPage.indices.push(i);
+            plainCurrentHeight+=plainEntryHeights[i];
+        }
+        if(plainCurrentPage.indices.length>0) plainPages.push(plainCurrentPage);
+        return plainPages;
+    }
+    
     // 非备忘录模板的原有逻辑
     measureBox.style.width=size.w+'px';
     const titleHeight=180;
     const pageSize=size.h-88;
+    // 批量测量：先全部插入，一次性读取高度
+    var entryHeights=[];
+    var mainFrag=document.createDocumentFragment();
+    var mainTempDivs=[];
+    for(let i=0;i<apps.length;i++){
+        var wrapper=document.createElement('div');
+        wrapper.innerHTML=renderAppEntry(apps[i],i);
+        var el=wrapper.firstElementChild;
+        mainTempDivs.push(el);
+        mainFrag.appendChild(el);
+    }
+    measureBox.appendChild(mainFrag);
+    for(let i=0;i<mainTempDivs.length;i++){
+        entryHeights.push(mainTempDivs[i].offsetHeight+20);
+    }
+    measureBox.innerHTML='';
+    // 根据高度分页
     const pages=[];
     let currentPage={indices:[],isFirst:true};
     let currentHeight=currentPage.isFirst?titleHeight:0;
     for(let i=0;i<apps.length;i++){
-        const app=apps[i];
-        const tempDiv=document.createElement('div');
-        tempDiv.innerHTML=renderAppEntry(app,i);
-        const entryEl=tempDiv.firstElementChild;
-        measureBox.appendChild(entryEl);
-        const entryHeight=entryEl.offsetHeight+20;
-        measureBox.removeChild(entryEl);
-        if(currentHeight+entryHeight>pageSize && currentPage.indices.length>0){
+        if(currentHeight+entryHeights[i]>pageSize && currentPage.indices.length>0){
             pages.push(currentPage);
             currentPage={indices:[],isFirst:false};
             currentHeight=0;
         }
         currentPage.indices.push(i);
-        currentHeight+=entryHeight;
+        currentHeight+=entryHeights[i];
     }
     if(currentPage.indices.length>0) pages.push(currentPage);
     return pages;
+}
+
+// ============ 纯色文字模板 ============
+function isLightColor(hex){
+    if(!hex||!hex.startsWith('#')) return false;
+    var c=hex.replace('#','');
+    if(c.length===3) c=c[0]+c[0]+c[1]+c[1]+c[2]+c[2];
+    var r=parseInt(c.substr(0,2),16);
+    var g=parseInt(c.substr(2,2),16);
+    var b=parseInt(c.substr(4,2),16);
+    var luminance=(0.299*r+0.587*g+0.114*b)/255;
+    return luminance>0.55;
+}
+
+function getPlainTextColors(bgColor){
+    var light=isLightColor(bgColor);
+    return {
+        title: light?'#1a1a1a':'#ffffff',
+        text: light?'#333333':'#e0e0e0',
+        name: light?'#000000':'#ffffff',
+        sub: light?'#666666':'#aaaaaa',
+        footer: light?'#999999':'#777777'
+    };
+}
+
+function renderPlainTextAppEntry(app,idx,bgColor){
+    var C=getPlainTextColors(bgColor);
+    var html='<div style="margin-bottom:28px;">';
+    html+='<div style="font-size:20px;font-weight:700;color:'+C.name+';margin-bottom:8px;">'+app.name;
+    html+='<span style="font-size:15px;font-weight:400;color:'+C.sub+';margin-left:10px;">🎯得吃率'+app.rate+'</span>';
+    html+='</div>';
+    if(app.story) html+='<div style="font-size:18px;color:'+C.text+';line-height:1.8;">'+app.story+'</div>';
+    else if(app.review) html+='<div style="font-size:18px;color:'+C.text+';line-height:1.8;">'+app.review+'</div>';
+    if(app.con) html+='<div style="font-size:16px;color:'+C.sub+';line-height:1.6;margin-top:6px;">不过'+app.con+'。</div>';
+    html+='</div>';
+    return html;
+}
+
+function renderPlainTextPage(pageApps,pageIndices,bgStyle,isFirst){
+    const size=getPageSize();
+    var solidColor=bgStyle;
+    if(!solidColor||!solidColor.startsWith('#')){
+        solidColor=getBgSolidColor();
+    }
+    var C=getPlainTextColors(solidColor);
+    var ti=currentTitleIntro||{title:'社交软件实测',intro:''};
+    var html='<div style="width:'+size.w+'px;height:'+size.h+'px;background:'+solidColor+';font-family:\'PingFang SC\',\'Microsoft YaHei\',sans-serif;display:flex;flex-direction:column;overflow:hidden;">';
+    // 顶部区域
+    html+='<div style="padding:44px 42px 0;flex:1;overflow:hidden;">';
+    if(isFirst){
+        html+='<div style="font-size:32px;font-weight:800;color:'+C.title+';line-height:1.3;margin-bottom:16px;text-align:center;">'+ti.title+'</div>';
+        if(ti.intro) html+='<div style="font-size:18px;color:'+C.text+';line-height:1.8;margin-bottom:24px;text-align:center;">'+ti.intro+'</div>';
+    }
+    pageApps.forEach(function(app,i){
+        html+=renderPlainTextAppEntry(app,pageIndices[i],solidColor);
+    });
+    html+='</div>';
+    // 底部署名
+    var myAppName=(document.getElementById('myApp')||{}).value||'';
+    var today=new Date();
+    var dateStr=today.getFullYear()+'.'+String(today.getMonth()+1).padStart(2,'0')+'.'+String(today.getDate()).padStart(2,'0');
+    html+='<div style="padding:0 42px 32px;text-align:center;font-size:13px;color:'+C.footer+';">';
+    if(myAppName) html+=myAppName+' · ';
+    html+=dateStr;
+    html+='</div>';
+    html+='</div>';
+    return html;
 }
 
 // ============ 奖牌排行模板 ============
@@ -1836,24 +2253,69 @@ const diaryStoryVariants={
         (n,m,a,d,c,r)=>`${n}，匹配了${m}个，加了${a}个，约了${d}个。最让人崩溃的是，聊了一个多月终于约出来了，结果她临时说不来了，之后再也没回过。花了${c}多块，成功率才${r}，时间感情都白费了。`,
         (n,m,a,d,c,r)=>`再说说${n}，匹配了${m}个，加了${a}个好友，见了${d}个。对面消失的频率真的离谱，约了见面然后人就没了，等了一个小时没人。花了${c}块，成功率${r}，每次约会都提心吊胆的。`,
     ],
+    主动:[
+        (n,m,a,d,c,r)=>`${n}，匹配了${m}个，加了${a}个好友，见了${d}个，花了${c}多块。最大的特点是女生比较主动，匹配后经常是对方先打招呼，约出来效率确实高。成功率${r}，小众但精准度还行。`,
+        (n,m,a,d,c,r)=>`说说${n}，匹配了${m}个，加了${a}个，见了${d}个。匹配后不用你绞尽脑汁想开场白，对方主动找你聊的概率挺高的。花了${c}块，成功率${r}，约会体验不错。`,
+        (n,m,a,d,c,r)=>`${n}给我的感觉就是女生主动，匹配了${m}个，加了${a}个好友。聊起来不费劲，约出来也爽快，见了${d}个，花了${c}多，成功率${r}，效率比大部分App都高。`,
+        (n,m,a,d,c,r)=>`用${n}一段时间，匹配了${m}个，加了${a}个。上面的人质量不错，聊天氛围轻松不太冷场。见了${d}个，花了${c}块，成功率${r}，小众App但精准度在线。`,
+        (n,m,a,d,c,r)=>`${n}匹配了${m}个，加了${a}个好友，见了${d}个，花了${c}多块。特点是女生比较主动，聊天不冷场，约出来也快。成功率${r}，虽然人不算多但精准。`,
+        (n,m,a,d,c,r)=>`再说说${n}，匹配了${m}个，加了${a}个，约了${d}个出来。小众App人不算多，但匹配后对方主动打招呼的概率高，约出来见面体验不错。花了${c}块，成功率${r}，性价比还行。`,
+    ],
 };
 
 // 与面（自APP）的日记体段落变体
 const diaryMyAppVariants=[
-    (n,m,a,d,c,r)=>`${n}，直接夯！匹配了${m}个，加了${a}个，见了${d}个，前后才花了${c}块……${d}个里拿下了好几个，成功率${r}，性价比直接拉满。`,
-    (n,m,a,d,c,r)=>`最后说${n}，这是我体验下来最靠谱的一个。匹配了${m}个，加了${a}个，见了${d}个，花了${c}块。关键是见面之后基本都有后续，成功率${r}，比其他App高了不止一点。`,
-    (n,m,a,d,c,r)=>`${n}真的不一样，匹配了${m}个，加了${a}个好友，见了${d}个，花了才${c}块。最让我惊喜的是，女生都比较主动，聊起来不费劲，约出来也爽快。成功率${r}，这是我两个月测下来最值的一个。`,
-    (n,m,a,d,c,r)=>`说说${n}吧，匹配了${m}个，加了${a}个，见了${d}个，才花了${c}块。对面聊天很直接，不用绕弯子，约出来之后基本都能处。成功率${r}，终于不用浪费时间和精力了。`,
-    (n,m,a,d,c,r)=>`${n}给我的感觉就是效率高，匹配了${m}个，加了${a}个，见了${d}个，花了${c}块。不像别的App聊半天还在原地，这个聊起来直接到位，成功率${r}，省时省钱。`,
-    (n,m,a,d,c,r)=>`再说${n}，匹配了${m}个，加了${a}个好友，见了${d}个，花费${c}块。最大的不同是，上面的女生真的会主动找你聊，约见面也不拖泥带水。成功率${r}，体验完全不在一个档次。`,
-    (n,m,a,d,c,r)=>`${n}，匹配了${m}个，加了${a}个，见了${d}个，才花${c}块。这是唯一一个让我觉得时间没白花的App，聊天直接，约出来快，关键是见面之后基本都有后续。成功率${r}，两个月测下来就它最值。`,
-    (n,m,a,d,c,r)=>`说说${n}，这个App让我眼前一亮。匹配了${m}个，加了${a}个好友，见了${d}个，花费${c}块。女生都比较直接，不用猜来猜去，成功率${r}，两个月里最靠谱的选择。`,
+    (n,m,a,d,c,r)=>`先说${n}，直接夯！匹配了${m}个，加了${a}个，见了${d}个，前后才花了${c}块……${d}个里拿下了好几个，成功率${r}，性价比直接拉满。`,
+    (n,m,a,d,c,r)=>`第一个说${n}，这是我体验下来最靠谱的。匹配了${m}个，加了${a}个，见了${d}个，花了${c}块。关键是见面之后基本都有后续，成功率${r}，比其他App高了不止一点。`,
+    (n,m,a,d,c,r)=>`开头先说${n}，真的不一样。匹配了${m}个，加了${a}个好友，见了${d}个，花了才${c}块。最让我惊喜的是，女生都比较主动，聊起来不费劲，约出来也爽快。成功率${r}，这是我两个月测下来最值的一个。`,
+    (n,m,a,d,c,r)=>`先聊聊${n}，匹配了${m}个，加了${a}个，见了${d}个，才花了${c}块。对面聊天很直接，不用绕弯子，约出来之后基本都能处。成功率${r}，终于不用浪费时间和精力了。`,
+    (n,m,a,d,c,r)=>`第一站${n}，匹配了${m}个，加了${a}个，见了${d}个，花了${c}块。不像别的App聊半天还在原地，这个聊起来直接到位，成功率${r}，省时省钱。`,
+    (n,m,a,d,c,r)=>`第一个要说的就是${n}，匹配了${m}个，加了${a}个好友，见了${d}个，花费${c}块。最大的不同是，上面的女生真的会主动找你聊，约见面也不拖泥带水。成功率${r}，体验完全不在一个档次。`,
+    (n,m,a,d,c,r)=>`先上${n}的数据，匹配了${m}个，加了${a}个，见了${d}个，才花${c}块。这是唯一一个让我觉得时间没白花的App，聊天直接，约出来快，关键是见面之后基本都有后续。成功率${r}，两个月测下来就它最值。`,
+    (n,m,a,d,c,r)=>`首先说${n}，这个App让我眼前一亮。匹配了${m}个，加了${a}个好友，见了${d}个，花费${c}块。女生都比较直接，不用猜来猜去，成功率${r}，两个月里最靠谱的选择。`,
+    (n,m,a,d,c,r)=>`先讲${n}，不吹不黑，匹配${m}个加了${a}个见了${d}个，花了${c}块，成功率${r}。上面的人是真的想聊天不是来混时间的，约出来基本都有后续，这是我测下来体验最好的。`,
+    (n,m,a,d,c,r)=>`第一个测的就是${n}，匹配了${m}个加了${a}个见了${d}个，才花${c}块。约出来见面不是那种尴尬的寒暄，是真的聊得来，成功率${r}，值了。`,
+    (n,m,a,d,c,r)=>`先提${n}，说实话让我重新相信社交软件了，匹配${m}个加了${a}个见了${d}个，花费${c}块。关键是约会体验好，不会聊半天约不出来，成功率${r}，比那些大平台强太多。`,
+    (n,m,a,d,c,r)=>`最先说${n}，匹配${m}个加了${a}个见了${d}个花了${c}块。这个App的约会效率是真的高，聊几句就能见面，见了面基本都能处，成功率${r}，省时省心。`,
+    (n,m,a,d,c,r)=>`先从${n}说起，匹配${m}加了${a}见了${d}才花了${c}块。别的App你聊一个月约不出来，这个聊两天就能见，成功率${r}，这才是社交软件该有的样子。`,
+    (n,m,a,d,c,r)=>`第一个推荐的${n}，匹配${m}个加了${a}个见了${d}个花费${c}。这个App的女生是真的好聊，不端着不装，约出来氛围很自然，成功率${r}，体验拉满。`,
+    (n,m,a,d,c,r)=>`先说重点${n}，匹配了${m}个加了${a}个见了${d}个，才花${c}块成功率${r}。最大的感受就是真实，上面的人不是为了刷存在感来的，是真的想认识人，约出来很顺。`,
+    (n,m,a,d,c,r)=>`首推${n}，匹配${m}加了${a}见了${d}花了${c}块。约会节奏快不拖沓，见面之后氛围好，成功率${r}，两个月测下来就这个最靠谱。`,
+    (n,m,a,d,c,r)=>`先说${n}，匹配${m}加了${a}见了${d}花${c}块成功率${r}。上面聊天氛围跟别的地方完全不同，不用尬聊不用猜，见面之后基本都能处到一起去。`,
+    (n,m,a,d,c,r)=>`第一个测的${n}，匹配${m}个加了${a}个见了${d}个花了${c}。从下载到第一次约出来就用了三天，别的App三周都不一定能见着人，成功率${r}，效率碾压。`,
+    (n,m,a,d,c,r)=>`先聊聊${n}的体验，匹配${m}加了${a}见了${d}花费${c}。这App最大的特点就是省心，不需要花里胡哨的技巧，聊天约出来都顺其自然，成功率${r}。`,
+    (n,m,a,d,c,r)=>`首先${n}，匹配${m}个加了${a}个见了${d}个花了${c}块。约会质量是真的高，见面之后不是那种走形式的敷衍，是真的有话说有感觉，成功率${r}，强推。`,
+];
+
+// 识俏社（自APP）的日记体段落变体
+const diaryShiqiaosheVariants=[
+    (n,m,a,d,c,r)=>`接下来${n}，匹配了${m}个，加了${a}个，见了${d}个，花了${c}多块。女生确实比较主动，匹配后经常是对方先打招呼，约出来效率高。成功率${r}，小众但精准。`,
+    (n,m,a,d,c,r)=>`然后说${n}，匹配了${m}个，加了${a}个好友，见了${d}个，花了${c}块。最大的特点是女生主动，聊天氛围轻松不冷场，约出来也爽快。成功率${r}，约会体验不错。`,
+    (n,m,a,d,c,r)=>`再说${n}，给我的感觉就是效率高，匹配了${m}个，加了${a}个，见了${d}个，花了${c}多。不像别的App对面冷淡敷衍，这个上面的人是真的想聊天。成功率${r}，小众App但精准度在线。`,
+    (n,m,a,d,c,r)=>`接着聊${n}，匹配了${m}个，加了${a}个，见了${d}个，才花了${c}块。上面女生主动打招呼的概率很高，不用你绞尽脑汁想开场白。成功率${r}，性价比不错。`,
+    (n,m,a,d,c,r)=>`第二个说${n}，匹配了${m}个，加了${a}个好友，见了${d}个，花了${c}多块。虽然人不算多但精准度很高，匹配后对方主动找你聊，约会效率确实高。成功率${r}，体验比大部分App好。`,
+    (n,m,a,d,c,r)=>`轮到${n}了，匹配了${m}个，加了${a}个，见了${d}个，花费${c}块。小众App人不多，但胜在精准和主动，女生会主动打招呼约见面也爽快。成功率${r}，值得一试。`,
+    (n,m,a,d,c,r)=>`接下来是${n}，匹配${m}个加了${a}个见了${d}个花了${c}块。上面女生主动打招呼的概率远超其他App，聊天氛围轻松不冷场，成功率${r}，小众但质量在线。`,
+    (n,m,a,d,c,r)=>`然后再说${n}，匹配${m}个加了${a}个见了${d}个，花了${c}。这App最大的优势就是女生不端着，想聊就聊想见就见，成功率${r}，效率比大平台高。`,
+    (n,m,a,d,c,r)=>`接着说${n}，匹配${m}加了${a}见了${d}才花${c}块。虽然用户量不大但精准，匹配后对方主动聊的概率高，约会节奏快，成功率${r}。`,
+    (n,m,a,d,c,r)=>`再聊聊${n}，匹配${m}个加了${a}个见了${d}个花费${c}。这App的女生是真的想出来见面的，约人很爽快不墨迹，成功率${r}，体验比预期好太多。`,
+    (n,m,a,d,c,r)=>`下面说${n}，匹配${m}加了${a}见了${d}花了${c}块。跟别的App最大的区别就是聊天启动成本低，女生会主动找话题，约见面也不费劲，成功率${r}。`,
+    (n,m,a,d,c,r)=>`再来${n}，匹配${m}个加了${a}个见了${d}个花了${c}。上面的人不多但个个都是真的想社交，聊天约会都很顺畅，成功率${r}，小众精品App的代表。`,
+    (n,m,a,d,c,r)=>`继续说${n}，匹配${m}加了${a}见了${d}才花了${c}。从匹配到见面基本两三天就搞定，别的App你聊一个月还在原地，成功率${r}。`,
+    (n,m,a,d,c,r)=>`然后是${n}，匹配${m}个加了${a}个见了${d}个花费${c}块。虽然小众但精准度碾压那些大平台，女生主动约会效率高，成功率${r}，值得一试。`,
+    (n,m,a,d,c,r)=>`还有一个${n}，匹配${m}个加了${a}个见了${d}个花了${c}。上面女生不装不端，聊天特别自然，约出来也不需要费劲找借口，成功率${r}，真的省心。`,
+    (n,m,a,d,c,r)=>`再来说${n}，匹配${m}加了${a}见了${d}花${c}块。对方想不想聊想不想见很直接，不浪费时间在无效社交上，成功率${r}。`,
+    (n,m,a,d,c,r)=>`后面还有${n}，匹配${m}加了${a}见了${d}花了${c}。每次约出来氛围都很轻松，不像别的地方全程尴尬，成功率${r}，回购率最高的App。`,
+    (n,m,a,d,c,r)=>`接着提${n}，匹配${m}个加了${a}个见了${d}个花费${c}。小众App的好处就是上面的人都是认真来的，聊天约见都很顺利，成功率${r}，性价比极高。`,
+    (n,m,a,d,c,r)=>`另外${n}，匹配${m}加了${a}见了${d}才花${c}块。最让我惊喜的是约出来的质量，不是那种敷衍式见面而是真的有话说有氛围，成功率${r}，宝藏App。`,
+    (n,m,a,d,c,r)=>`最后推荐${n}，匹配${m}个加了${a}个见了${d}个花了${c}。别看人少但精准，约会效率高聊天氛围好，成功率${r}，小众App里的战斗机。`,
 ];
 
 // 生成diary段落数据
 function generateDiaryData(){
-    var myAppName=document.getElementById('myApp').value.trim()||'与面';
-    var competitorCount=randInt(4,6);
+    var myAppSelect=document.getElementById('myApp').value.trim()||'与面';
+    var isDualMode=(myAppSelect==='与面+识俏社');
+    var competitorCount=isDualMode?randInt(3,5):randInt(4,6);
     var shuffled=[...otherApps].sort(()=>Math.random()-0.5);
     var selected=shuffled.slice(0,competitorCount);
     // 生成竞品数据
@@ -1868,18 +2330,45 @@ function generateDiaryData(){
         var text=randPick(variants)(app.name,match,add,date,cost,rate+'%');
         return {name:app.name,match:match,add_friend:add,date:date,cost:cost,rate:rate+'%',is_mine:false,story_type:storyType,text:text};
     });
-    // 生成自APP数据
-    var myMatch=randInt(100,200);
-    var myAdd=randInt(18,29);
-    var myDate=randInt(15,30);
-    var myCost=randInt(200,500);
-    var myRate=randInt(40,60);
-    var myText=randPick(diaryMyAppVariants)(myAppName,myMatch,myAdd,myDate,myCost,myRate+'%');
-    var myApp={name:myAppName,match:myMatch,add_friend:myAdd,date:myDate,cost:myCost,rate:myRate+'%',is_mine:true,story_type:'',text:myText};
-    // 随机位置插入与面
-    var myAppPos=randInt(0,competitors.length);
     var allApps=[...competitors];
-    allApps.splice(myAppPos,0,myApp);
+    if(isDualMode){
+        // 双APP模式：与面+识俏社
+        var yumianMatch=randInt(100,200);
+        var yumianAdd=randInt(18,29);
+        var yumianDate=randInt(15,30);
+        var yumianCost=randInt(200,500);
+        var yumianRate=randInt(40,60);
+        var yumianText=randPick(diaryMyAppVariants)('与面',yumianMatch,yumianAdd,yumianDate,yumianCost,yumianRate+'%');
+        var yumianApp={name:'与面',match:yumianMatch,add_friend:yumianAdd,date:yumianDate,cost:yumianCost,rate:yumianRate+'%',is_mine:true,story_type:'',text:yumianText};
+        var sqsMatch=randInt(80,150);
+        var sqsAdd=randInt(15,28);
+        var sqsDate=randInt(8,20);
+        var sqsCost=randInt(200,450);
+        var sqsRate=randInt(55,75);
+        var sqsText=randPick(diaryShiqiaosheVariants)('识俏社',sqsMatch,sqsAdd,sqsDate,sqsCost,sqsRate+'%');
+        var sqsApp={name:'识俏社',match:sqsMatch,add_friend:sqsAdd,date:sqsDate,cost:sqsCost,rate:sqsRate+'%',is_mine:true,story_type:'',text:sqsText};
+        // 与面插第二位，识俏社插第三位
+        if(allApps.length>0){
+            allApps.splice(1,0,yumianApp);
+            allApps.splice(2,0,sqsApp);
+        }else{
+            allApps.push(yumianApp,sqsApp);
+        }
+    }else{
+        // 单APP模式
+        var myAppName=myAppSelect;
+        var myMatch=randInt(100,200);
+        var myAdd=randInt(18,29);
+        var myDate=randInt(15,30);
+        var myCost=randInt(200,500);
+        var myRate=randInt(40,60);
+        var variantsPool=(myAppName==='识俏社')?diaryShiqiaosheVariants:diaryMyAppVariants;
+        var myText=randPick(variantsPool)(myAppName,myMatch,myAdd,myDate,myCost,myRate+'%');
+        var myApp={name:myAppName,match:myMatch,add_friend:myAdd,date:myDate,cost:myCost,rate:myRate+'%',is_mine:true,story_type:'',text:myText};
+        // 随机位置插入自APP
+        var myAppPos=randInt(0,competitors.length);
+        allApps.splice(myAppPos,0,myApp);
+    }
     // 生成段落列表
     var paragraphs=[];
     // 开场白
@@ -2026,6 +2515,10 @@ function openModal(idx){
         document.getElementById('modalOverlay').classList.add('show');
         return;
     }
+    if(templateStyle==='qq'){
+        openQQModal(idx);
+        return;
+    }
     if(templateStyle==='wechat'){
         openWechatModal(idx);
         return;
@@ -2072,11 +2565,16 @@ function closeModal(){
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
 
 async function generate(){
+    var floatBtn=document.getElementById('floatingGenBtn');
+    if(floatBtn&&floatBtn.disabled)return;
+    if(floatBtn){floatBtn.disabled=true;floatBtn.textContent='⏳ 生成中...';}
+    try{
     var templateStyle=document.getElementById('templateStyle').value;
     cachedMemoDate=''; cachedMemoDateObj=null; memoBatchParams=null; // 重置备忘录日期缓存
     const size=getPageSize();
     const previewArea=document.getElementById('previewArea');
-    previewArea.innerHTML='';
+    previewArea.innerHTML='<div style="display:flex;align-items:center;justify-content:center;width:100%;min-height:300px;color:#aaa;font-size:18px;">⏳ 生成中...</div>';
+    await new Promise(function(r){requestAnimationFrame(r);});
     const scale=0.28;
     
     // 日记体模板单独处理
@@ -2087,6 +2585,7 @@ async function generate(){
         currentPages=new Array(currentDiaryPages.length);
         currentData=[];
         
+        previewArea.innerHTML='';
         for(var i=0;i<currentDiaryPages.length;i++){
             var html=renderDiaryPageByIdx(i);
             var wrapper=document.createElement('div');
@@ -2112,107 +2611,8 @@ async function generate(){
     var kw = (document.getElementById('myAppKeywords').value || '').trim();
     var kwList = kw ? kw.split(/\s+/).filter(function(w){return w}) : [];
     
-    // 与面故事：组合式生成（零件随机组合，几万种不重复）
-    function generateMyAppStory(kwList){
-        // 零件池
-        var chatDays = ['当天','第一天','两天','三天','半天','一晚上','不到三天','一周'];
-        var chatActions = ['就约出来了','就见面了','就约了','就聊到见面了','直接约了'];
-        var ages = ['20','21','22','23','24','25','26','27','28','29','30','31','32','33','34'];
-        var types = [
-            {label:'少妇',tag:'少妇'},{label:'已婚',tag:'已婚'},{label:'人妻',tag:'人妻'},
-            {label:'大学生',tag:'大学生'},{label:'女大',tag:'大学生'},{label:'研究生',tag:'大学生'},
-            {label:'护士',tag:'护士'},{label:'幼师',tag:'老师'},{label:'老师',tag:'老师'},
-            {label:'前台',tag:'职场'},{label:'销售',tag:'职场'},{label:'会计',tag:'职场'},
-            {label:'客服',tag:'职场'},{label:'设计师',tag:'职场'},{label:'主播',tag:'职场'},
-            {label:'空姐',tag:'职场'},{label:'化妆师',tag:'职场'},{label:'模特',tag:'职场'},
-            {label:'瑜伽教练',tag:'健身'},{label:'健身教练',tag:'健身'},{label:'舞蹈老师',tag:'健身'},
-        ];
-        var marriedHints = ['老公出差了','老公常年不在家','老公不管她','老公外地工作','婚姻不幸福','老公出差一个月','老公常年出差'];
-        var chatDetails = ['聊得特别直接，没几句就约了','上来就聊到一块去了，没绕弯子','她说话很直接不墨迹，当天就约好了','聊天氛围特别好，不用试探就约了','聊了几个小时感觉对路，直接约见面'];
-        var meetDetails = ['见面发现本人比照片还好看','见面后她特别随和，一点不尴尬','本人比照片还好看，聊天也很舒服','见面后完全没有生疏感，像认识很久','一见面就聊得很开心，完全不尴尬'];
-        var places = ['去了酒吧','去了日料店','去了烧烤摊','去了火锅店','去了咖啡厅','去了夜市','去了清吧','去了音乐餐厅','去了海边散步','去了商场逛了逛'];
-        var placeDetails = ['喝了两杯氛围就上来了','吃吃喝喝聊得特别开心','氛围很好越聊越投机','边喝边聊特别放松','聊着聊着就靠过来了'];
-        var results = [
-            '她说不想回家，直接跟我走了',
-            '她说今晚不想一个人，直接带走',
-            '喝完她说太晚了不想回去，那晚真得吃了',
-            '她说不想回去，跟着我走了，那晚特别爽',
-            '她说今晚不回去了，直接跟我回去了',
-            '吃完她说不想一个人回去，那晚真得吃了',
-            '喝完她靠过来说今晚跟你走了，直接带走',
-            '她说困了不想回去，跟着我走了',
-            '那晚直接跟我走了，得吃率确实高',
-            '吃完她说不想回去住酒店，我说跟我走吧',
-            '她说好久没这样了，那晚特别猛',
-            '喝完直接跟我走了，得吃率名不虚传',
-            '她说不想一个人，那晚去了她家',
-            '气氛到位了，直接跟我走了，真得吃了',
-            '她说太晚了不想回去，跟着我走了',
-        ];
-        var highlights = [
-            '这App得吃率真不是吹的',
-            '这软件少妇是真的多',
-            '大学生也超多',
-            '已婚的特别多',
-            '得吃率确实牛逼',
-            '人妻太多了',
-            '这App效率太高了',
-            '得吃率名不虚传',
-            '少妇质量太顶了',
-            '大学生含量也高',
-            '这软件约人太容易了',
-            '上面已婚率太高了',
-        ];
-        
-        // 拼故事
-        var chatDay = randPick(chatDays);
-        var chatAction = randPick(chatActions);
-        var age = randPick(ages);
-        var type = randPick(types);
-        var chatDetail = randPick(chatDetails);
-        var meetDetail = randPick(meetDetails);
-        var place = randPick(places);
-        var placeDetail = randPick(placeDetails);
-        var result = randPick(results);
-        var highlight = randPick(highlights);
-        
-        // 第一段：聊了X天就约出来了，X岁少妇/大学生/...，原因/背景
-        var para1 = '';
-        // 第二段：聊天细节，见面细节
-        var para2 = '';
-        // 第三段：去了哪里，地点细节，结果
-        var para3 = '';
-        // 第四段：亮点总结
-        var para4 = highlight;
-        
-        if(type.tag === '少妇' || type.tag === '已婚' || type.tag === '人妻'){
-            var hint = randPick(marriedHints);
-            para1 = '聊了'+chatDay+chatAction+'，'+age+'岁'+type.label+'，'+hint+'。';
-            para2 = chatDetail+'，'+meetDetail+'。';
-            para3 = place+'，'+placeDetail+'，'+result+'。';
-        } else if(type.tag === '大学生'){
-            var reasons = ['放假说无聊想出来','说想出来透透气','说想交朋友','放暑假无聊','说想出来见见世面'];
-            para1 = '聊了'+chatDay+chatAction+'，'+age+'岁'+type.label+'，'+randPick(reasons)+'。';
-            para2 = chatDetail+'，'+meetDetail+'。';
-            para3 = place+'，'+placeDetail+'，'+result+'。';
-        } else {
-            var reasons2 = ['下夜班想出来放松','下班后不想回家','加完班想出来透气','说上班太烦想出来','说好久没这样了'];
-            para1 = '聊了'+chatDay+chatAction+'，'+age+'岁'+type.label+'，'+randPick(reasons2)+'。';
-            para2 = chatDetail+'，'+meetDetail+'。';
-            para3 = place+'，'+placeDetail+'，'+result+'。';
-        }
-        
-        // 如果用户填了关键词，融入故事
-        if(kwList && kwList.length > 0){
-            var kwStr = kwList.join('、');
-            para1 = '聊了'+chatDay+chatAction+'，'+kwStr+'。';
-        }
-        
-        return para1 + '\n\n' + para2 + '\n\n' + para3 + '\n\n' + para4;
-    }
-    
-    // 每次生成故事
-    var myAppStory = generateMyAppStory(kwList);
+    // 自APP故事：使用全局buildMyAppStoryText
+    var myAppStory = buildMyAppStoryText(kwList);
     
     // 竞品故事：组合式生成，有流程有细节
     function generateCompetitorStory(storyType){
@@ -2221,14 +2621,15 @@ async function generate(){
         var types = ['护士','销售','前台','老师','客服','主播','会计','设计师'];
         var places = ['咖啡厅','餐厅','商场','酒吧','奶茶店'];
         var pools = {
-            '冷淡': {chat:['发了十条回一条','聊了半天就回了个嗯','对方隔两小时才回','消息跟石沉大海一样'],meet:['根本约不出来','说再说吧就没下文','约了三次都说忙','提见面就装死'],end:['纯浪费时间','跟对墙说话一样','太浪费时间了','还不如不打字']},
-            '敷衍': {chat:['秒回但全是哈哈哈','聊什么都是哈哈哈','话题聊不到正题','对面没认真聊'],meet:['一提见面就岔开','约见面说再看看','说见面太早再聊聊','约了三次没约出'],end:['完全带不动','聊了个寂寞','纯无效聊天','聊了等于没聊']},
-            '照骗': {chat:['照片看着特别好看','朋友圈全是精修图','照片像网红','头像特别惊艳'],meet:['见面差点没认出来','真人跟照片完全两个人','滤镜太狠真人差太多','见面愣了不是一个人'],end:['美颜开到头了','修图亲妈不认识','照骗无疑','太假了白跑一趟']},
-            '审问': {chat:['一上来问收入有没有房','加好友第一句问月薪','跟面试一样什么都问','工资学历房车问了个遍'],meet:['见面还在问条件','约会搞得像相亲','对面跟HR在审核我','比我妈还关心我收入'],end:['太现实了','聊得不想回了','感觉在被审核','约会搞这么累']},
-            '查户口': {chat:['一上来查家底','房车存款问了个遍','三句话离不开钱','工作收入家庭全问了'],meet:['见面问房子多大','车多少钱月薪多少','跟相亲大妈似的','比查户口还细'],end:['太现实了聊不下去','感觉在被审核','全是物质女','性价比太低']},
-            '消失': {chat:['聊得挺好突然消失了','前一天还聊得火热','约好了时间地点','正聊到关键时候'],meet:['第二天直接人间蒸发','当天对方消失了','消息全部不回','电话也不接'],end:['被放鸽子了','之后再也没回过','连续几天不回','约不出来白等了']},
-            '托': {chat:['聊了半天终于约出来','匹配到个聊得还行的','约了见面她指定地点','好不容易约了一个'],meet:['一见面带我去高档餐厅','直接说去某个酒吧','坐下就点贵的','非要去某家店'],end:['吃完让我买单花了八百','一晚花了几百','感觉是饭托酒托','妥妥的托亏大了']},
-            '好人卡': {chat:['聊了半月感觉挺好的','聊得来氛围也不错','什么都聊得来','聊了两周感觉对路'],meet:['约出来玩得也开心','见面聊得也行','约会氛围也不错','见面后也没问题'],end:['发了好人卡说适合做朋友','回去说还是做朋友','她说对我没感觉','经典好人卡约不出第二次']},
+            '冷淡': {chat:['发了十条回一条','聊了半天就回了个嗯','对方隔两小时才回','消息跟石沉大海一样','对面跟不存在一样','发了一堆消息一个字没回','聊了半天就回了俩标点'],meet:['根本约不出来','说再说吧就没下文','约了三次都说忙','提见面就装死','约见面直接不回了','说了句下次再说就没了','提了三次见面全被敷衍过去'],end:['纯浪费时间','跟对墙说话一样','太浪费时间了','还不如不打字','聊了跟没聊一样','纯单机游戏','浪费感情浪费时间']},
+            '敷衍': {chat:['秒回但全是哈哈哈','聊什么都是哈哈哈','话题聊不到正题','对面没认真聊','回复挺快但全是废话','就发表情包不说人话','聊什么都是好的嗯嗯'],meet:['一提见面就岔开','约见面说再看看','说见面太早再聊聊','约了三次没约出','一说见面就顾左右而言他','每次约都说下次下次','约了三回一次没见着'],end:['完全带不动','聊了个寂寞','纯无效聊天','聊了等于没聊','等于没聊','聊了个空气','纯消耗时间']},
+            '照骗': {chat:['照片看着特别好看','朋友圈全是精修图','照片像网红','头像特别惊艳','朋友圈每张都像精修大片','照片拍得跟写真一样','头像仙气飘飘'],meet:['见面差点没认出来','真人跟照片完全两个人','滤镜太狠真人差太多','见面愣了不是一个人','真人和照片差距太大了','见面差点没敢认','现实版卖家秀买家秀'],end:['美颜开到头了','修图亲妈不认识','照骗无疑','太假了白跑一趟','白跑一趟太假了','照骗无疑心累','滤镜碎了一地']},
+            '审问': {chat:['一上来问收入有没有房','加好友第一句问月薪','跟面试一样什么都问','工资学历房车问了个遍','第一句就问年薪多少','像在做背调一样','条件不合适直接不理了'],meet:['见面还在问条件','约会搞得像相亲','对面跟HR在审核我','比我妈还关心我收入','见面还在盘问家底','约会变面试现场','吃个饭像在做背景调查'],end:['太现实了','聊得不想回了','感觉在被审核','约会搞这么累','太功利了','跟相亲市场一样','感觉在被估价']},
+            '查户口': {chat:['一上来查家底','房车存款问了个遍','三句话离不开钱','工作收入家庭全问了','房车存款一个不落','工作单位职位全要问','比我妈还关心我收入'],meet:['见面问房子多大','车多少钱月薪多少','跟相亲大妈似的','比查户口还细','见面就问房子多大','连父母退休金都问了','比社区调查还详细'],end:['太现实了聊不下去','感觉在被审核','全是物质女','性价比太低','太物质了聊不下去','全是条件交换','感觉在填表格']},
+            '消失': {chat:['聊得挺好突然消失了','前一天还聊得火热','约好了时间地点','正聊到关键时候','聊着聊着人就不见了','还好好的突然不回消息','前一天说晚安第二天消失'],meet:['第二天直接人间蒸发','当天对方消失了','消息全部不回','电话也不接','约好了当天被放鸽子','见面地点都定了人没来','说好的见面直接爽约'],end:['被放鸽子了','之后再也没回过','连续几天不回','约不出来白等了','被鸽了心累','人间蒸发找不到了','白期待一场']},
+            '托': {chat:['聊了半天终于约出来','匹配到个聊得还行的','约了见面她指定地点','好不容易约了一个','主动约你出去很热情','指定地点指定餐厅','说想尝尝某家新店'],meet:['一见面带我去高档餐厅','直接说去某个酒吧','坐下就点贵的','非要去某家店','一到就往贵的点','带着闺蜜来蹭饭','专门去高消费场所'],end:['吃完让我买单花了八百','一晚花了几百','感觉是饭托酒托','妥妥的托亏大了','花了大几百冤枉钱','感觉被套路了','妥妥的托亏大了']},
+            '好人卡': {chat:['聊了半月感觉挺好的','聊得来氛围也不错','什么都聊得来','聊了两周感觉对路','聊得来氛围好','觉得各方面都挺合','聊到无话不谈的程度'],meet:['约出来玩得也开心','见面聊得也行','约会氛围也不错','见面后也没问题','约出来也玩得开心','见面氛围也不错','约会过程很愉快'],end:['发了好人卡说适合做朋友','回去说还是做朋友','她说对我没感觉','经典好人卡约不出第二次','结果发了张好人卡','说适合做朋友不适合恋爱','经典你很好但是不行']},
+            '主动': {chat:['匹配后她先打招呼','对方主动找话题聊','女生比较主动不冷场','她先发消息问我在哪','匹配后她先打招呼','不用你主动找话题','对方会主动聊自己'],meet:['约出来见面她很自然','见面不尴尬聊天顺畅','她主动约了下次见面','约会氛围轻松不冷','见面很自然不尴尬','约会节奏很顺畅','对方主动约了下次'],end:['得吃率还可以','约会体验不错','小众但精准','效率比其他App高','得吃率比其他App高','约会效率很不错','小众但真的精准']},
         };
         var pool = pools[storyType] || pools['冷淡'];
         return '聊了'+randPick(chatDays)+'，'+randPick(ages)+'岁'+randPick(types)+'，约出来去了'+randPick(places)+'。'+randPick(pool.chat)+'，'+randPick(pool.meet)+'，'+randPick(pool.end)+'。';
@@ -2242,6 +2643,17 @@ async function generate(){
             '上面全是高冷女，发了二十条消息就回了一个表情包，聊不动',
             '匹配倒是快，聊起来跟审犯人似的，你不问对方永远不说',
             '聊了半天对方就回个哈哈，正题根本带不起来，全是无效聊天',
+        
+            '匹配了8个就2个回了消息，一个只说嗯嗯，另一个隔三小时回一句，完全聊不动',
+            '上面的人跟冰窖似的，发了十来条消息对方就回了两个字"好的"，然后就没然后了',
+            '聊了五个人没一个愿意多说两句的，问一句答一句，跟做问卷似的',
+            '匹配是匹配了，但对面跟不存在一样，一周发了二十条消息总共就回了一条',
+            '全是高冷范的，你好她嗯，你问她答，你不说话对面永远不主动，社交软件搞成单机了',
+            '跟上面的人聊天像在写请愿书，发了长段消息她回一个字，心凉透了',
+            '聊了两天对面总共说了不到二十个字，我还以为我手机坏了，结果就是冷淡',
+            '发了十来条消息对方就回了个问号，我说什么她问什么，完全没有聊天意愿',
+            '上面的人像是被迫注册的，你发消息她当没看见，偶尔冒出来回个"哦"',
+            '匹配了十几个，聊得最多的那个也就聊了五句，社交软件做成这样也是服了',
         ],
         '敷衍': [
             '消息倒是秒回，但全是哈哈表情包，一聊见面就岔开话题',
@@ -2249,6 +2661,17 @@ async function generate(){
             '聊了两天全是哈哈哈，约见面就说再说吧，完全带不动',
             '聊得挺热闹但都是废话，约出来对方说再看看，拖了一周没见着',
             '秒回是真的但内容全是水，聊正事就沉默，感觉对面根本不想见',
+        
+            '对方回消息倒挺快，但永远就是哈哈好的嗯嗯，约见面就说再说吧，聊了个寂寞',
+            '聊了三天全是表情包大战，说想见面她就说"到时候再说"，一个月了也没到时候',
+            '每次聊到见面就转移话题，聊别的还挺嗨，一提见面就沉默',
+            '回复速度是快但内容跟没说一样，全是"嗯嗯哈哈确实"，约不出来等于没聊',
+            '对面就是个回声机器，我说啥她就"哈哈"或者"真的吗"，没有一句实质内容',
+            '聊了半天感觉对面就是个人机，你说什么她回个表情包，约见面说看心情',
+            '上面的人都在敷衍式聊天，秒回但没营养，约见面永远"下次一定"',
+            '匹配了好几个都是这种风格，聊天记录打开全是哈哈哈，提见面就装死',
+            '聊天跟刷弹幕一样全是哈哈哈666，一聊正事就没声了，纯浪费时间',
+            '约见面永远说"再聊聊看"，聊了一个月还是再看看，真是服了',
         ],
         '照骗': [
             '照片看着像模特，见面认不出来了，修图修得亲妈都不认识',
@@ -2256,6 +2679,17 @@ async function generate(){
             '朋友圈全是精修图，真人差太多了，见面我都愣了',
             '照片和真人差距太大，见面差点没认出来，滤镜开太狠了',
             '照片特别好看，见面直接劝退，美颜开到头了属于是',
+        
+            '网图用得太离谱了，照片跟明星似的见面完全不是一个人，身高都得少报十厘米',
+            '照片看着二十出头，见面一看三十好几，磨皮瘦脸开到极限了属于是',
+            '朋友圈全是精修九宫格，见面那天我都怀疑是不是本人',
+            '头像绝美真人判若两人，美颜相机是它的第二层皮肤',
+            '照片是女神级别，见面直接想说你好再见，滤镜和现实之间隔了一个太平洋',
+            '照片甜美可人，见面我直接石化了，P图技术可以出道了',
+            '见面的时候我左右看了好几遍确认是不是同一个人，差距太大了',
+            '朋友圈每张图都是大片质感，真人一出场滤镜全碎，太失望了',
+            '照片里的她又白又瘦又年轻，见面又黑又胖又显老，这修图水平可以去教课了',
+            '见面第一反应是找逃跑路线，照片跟真人简直是卖家秀和买家秀',
         ],
         '审问': [
             '一上来就问收入多少有没有房，跟面试一样，聊得我都不想回了',
@@ -2263,6 +2697,17 @@ async function generate(){
             '加好友第一句话就问哪里人什么工作月薪多少，太现实了',
             '聊了十分钟被问了二十个问题，收入学历房车家庭全问了一遍',
             '对面跟HR一样，上来就问条件，不符合直接不回消息了',
+        
+            '刚聊十分钟就被查了一遍户口，月薪多少有没有公积金，跟在银行办贷款似的',
+            '对面一上来就列了清单问我，学历收入车房父母退休金，比HR面试还专业',
+            '还没见面就把我条件盘了个底朝天，然后说"我觉得我们不太合适"',
+            '聊了两句就开始评估我的身价，问完收入问车，问完车问房',
+            '她的问题比公务员考试还多，一问一答模式，完了来句"我再考虑考虑"',
+            '一上来就问我年薪税前还是税后，有没有年终奖，我是在相亲还是在报税',
+            '加好友五分钟就被问了十个问题，从学历到存款到父母职业，比背调还全',
+            '对面像在筛选简历，先问条件符合再聊，不符合直接不回，效率是高但太现实了',
+            '还没约出来就被判了死刑，因为我没有房，连见面的机会都不给',
+            '聊了二十分钟感觉自己像在参加面试，对面一直在用条件打分，毫无温度',
         ],
         '查户口': [
             '一上来就问有没有车房，月薪多少存款多少，比我妈还关心我收入',
@@ -2270,6 +2715,17 @@ async function generate(){
             '对面跟相亲市场大妈似的，房子多大车多少钱全问个遍',
             '聊天三句话离不开钱，月薪多少房贷还多少，太现实了',
             '加好友就开始查家底，房车存款问了个遍，感觉在被审核',
+        
+            '聊天三分钟就开始查家底，家里几口人父母干嘛的房在哪，你是社区办事处的吗',
+            '刚打完招呼就被问了收入和存款，我说了个数她说"哦"，然后就不怎么回了',
+            '上来就问我有没房贷车贷，父母有没有退休金，比相亲还直白',
+            '对方跟做尽职调查一样，工作单位职位年薪年终奖全问了个遍',
+            '加了好友第一件事就是问条件，房子多大在哪个区，这哪是交友分明是资产评估',
+            '一上来就问我有没有独立婚房，车子全款还是贷款，存款几位数，相亲都没这么细',
+            '对面聊天就三个方向：房、车、钱，其他话题一律不接，太功利了',
+            '她的问题清单：哪年毕业？税后多少？几套房？什么车？爸妈退休金？比查户口还全',
+            '刚匹配就收到灵魂三问：有房吗？有车吗？月薪多少？回答完就没下文了',
+            '聊天像在填表格，基本信息问完后还要问父母情况，我是在相亲还是在入狱审查',
         ],
         '消失': [
             '聊得挺好的突然就消失了，约好了见面结果当天拉黑了',
@@ -2277,6 +2733,17 @@ async function generate(){
             '约了周末见面，到了当天对方直接消失了，电话也不接',
             '聊了一周约好了时间地点，结果当天被放鸽子，之后再也没回过',
             '正聊到关键的时候人就没了，连续三天不回消息，约不出来',
+        
+            '约好了周六见面，周六早上发消息发现被删了，前一天晚上还在聊',
+            '聊了一个多星期感觉挺好，约了时间和地点，到了那天我等了一个小时没人来',
+            '正聊得火热突然就不再回复了，连续发了几条消息都石沉大海',
+            '约出来见面那天早上还确认了时间，下午就消失了，电话不接微信不回',
+            '聊了快两周好不容易约出来，前一天还说了晚安，第二天整个人就没了',
+            '本来约好了去看电影，到了电影院门口她不接电话，之后微信也删了',
+            '聊了三天约了周五吃饭，周四还说好期待，周五直接人间蒸发',
+            '感觉聊得越来越好，结果某天突然一条消息都不回了，不知道发生了什么',
+            '约了下午两点咖啡馆，等到两点半对方不回消息，三点直接把我拉黑了',
+            '聊了一个月约了三次每次都放鸽子，最后一次约完对方直接消失了，白浪费感情',
         ],
         '托': [
             '见面就带我去高档餐厅，点了一堆贵的，吃完让我买单，感觉是饭托',
@@ -2284,6 +2751,17 @@ async function generate(){
             '感觉对方是酒托，一见面就往酒吧带，点了最贵的酒让我付',
             '约了见面她非要去某家餐厅，坐下就点贵的，吃完才发觉不对',
             '聊了半天终于约出来，结果一见面就带我去消费，妥妥的托',
+        
+            '约见面她非要去指定的一家餐厅，进去看菜单价格吓一跳，吃完花了一千多',
+            '一见面就说去她朋友开的酒吧坐坐，进去直接开瓶洋酒，结账的时候两千多',
+            '约出来她带了两个闺蜜，点了一桌子菜还开了瓶红酒，最后让我买单花了八百',
+            '她主动约我去某家新开的甜品店，到了发现价格离谱，吃完才反应过来',
+            '刚见面就说想喝东西带我去了一家清吧，点了一堆最后让我结账花了六百',
+            '约了见面她说想去某家网红餐厅打卡，坐下就点最贵的套餐，吃完要AA但她的那份比我的贵三倍',
+            '一见面就拉我去商场某家奶茶店，点了四杯还要加小料，我一算花了快一百',
+            '她指定了一家西餐厅，菜单都没看就点了推荐套餐，结账小一千，感觉被安排了',
+            '约出来她说想去唱歌，带我去了一家KTV，进去就开酒，结账一看消费了八百多',
+            '见面后她说想去海边走走，到了之后硬拉我去旁边一家海鲜餐厅，点了一桌子我买单',
         ],
         '好人卡': [
             '聊了半个月感觉挺好的，结果见面发了张好人卡，说适合做朋友',
@@ -2291,6 +2769,35 @@ async function generate(){
             '约出来了聊得也行，结果回去就发消息说还是做朋友吧',
             '花了两周时间聊，约出来了玩得也开心，但她说对我没感觉',
             '什么都聊得来，见面也没问题，但就是止步于朋友，约不出来第二次',
+        
+            '聊了一个月约出来三次，每次都很开心，结果她说"你真的很好但我没有心动的感觉"',
+            '花了两周聊到无话不谈，约出来也玩得很嗨，回去就发来一句"我们还是做朋友吧"',
+            '约出来吃了三次饭看了两次电影，我以为稳了，她说"你是我最好的异性朋友"',
+            '聊得来约得出来但就是没有进展，她说我很好但缺少那种感觉',
+            '投入了不少时间和钱，约出来也都不错，最后她说"你适合更好的"',
+            '聊了两周终于约出来，见面聊了三小时很开心，回去她发消息说"你人真好但我不心动"',
+            '约了四次每次都很愉快，我以为在进步，她说"我们做朋友更合适"直接判了',
+            '聊了半年约出来五六次，她一直说再看看，最后发了个好人卡说"你值得更好的人"',
+            '什么都好就是不来电，她说"你是我遇到过最好的聊天对象"，翻译一下就是不行',
+            '约出来三次花了两千多，她说"你对我太好了我有压力"，然后就没有然后了',
+        ],
+        '主动': [
+            '匹配后她先打招呼，聊起来不费劲，约出来见面也爽快，小众App但精准',
+            '女生比较主动，聊天不会冷场，约会效率确实比别的App高',
+            '上面的人质量不错，匹配后对方主动找你聊，约出来见面体验还行',
+            '聊天氛围轻松不太冷场，约出来也快，就是人不算多',
+            '小众App人不多，但匹配后女生主动打招呼的概率高，约会体验不错',
+        
+            '匹配后对方先发消息，聊了两句就约了见面，效率确实高，小众App精准度在线',
+            '女生主动打招呼约见面也很爽快，聊天不冷场不尴尬，约会效率比大平台好',
+            '上面的人比较直接，匹配后不用等对方回消息，约出来见面节奏快不拖沓',
+            '小众App但匹配后对方很主动，约出来氛围轻松，得吃率比预期高不少',
+            '女生会主动找话题聊天，约见面也很干脆，效率体验都在线就是人少了点',
+            '匹配后她先说话，而且不是那种你好在吗的敷衍，是真的想聊，约出来很快',
+            '上面的人目的明确，匹配后快速进入聊天正题，约见面不拖泥带水效率高',
+            '女生主动打招呼的概率比别的App高很多，聊天氛围好，约出来约会体验不错',
+            '小众但精准，匹配后不用尬聊直接就能聊起来，约会节奏快体验好',
+            '约会效率高主要是因为对方真的想出来，不是来刷存在感的，约起来很顺畅',
         ],
     };
     var defaultCompetitorStories = [
@@ -2302,19 +2809,19 @@ async function generate(){
     
     // 把故事写入currentData（根据文案风格选择不同文案池）
     var storyStyleChoice = document.getElementById('storyStyleSelect').value || 'story';
-    var appName = document.getElementById('myApp').value.trim() || '与面';
+    var myAppSelectValue = document.getElementById('myApp').value.trim() || '与面';
     currentData.forEach(function(app){
         if(app.is_mine){
             if(storyStyleChoice === 'story'){
                 // 优先使用JSON分组数据
                 var jsonStory = getGroupStory();
                 if(jsonStory){
-                    app.story = jsonStory.replace(/__APP__/g, appName);
+                    app.story = jsonStory.replace(/__APP__/g, app.name);
                 } else {
-                    app.story = generateStoryStyleMyApp();
+                    app.story = generateStoryStyleMyAppFor(app.name).story;
                 }
             } else {
-                app.story = myAppStory;
+                app.story = buildMyAppStoryText([]);
             }
         } else {
             if(storyStyleChoice === 'story'){
@@ -2367,6 +2874,26 @@ async function generate(){
                 '亲测告诉你，有些App是真的能得吃，有些纯浪费时间，数据不会骗人',
                 '花了两个月把社交App从真人率到得吃率全测了，结果差距不是一般大',
                 '社交软件用对了脱单效率翻倍，用错了纯当韭菜，看我的实测数据你就懂了',
+                '兄弟姐妹们注意了，我用真金白银和大量时间替你们把主流社交软件全踩了一遍，结论很扎心',
+                '说真的，有些App你充了会员跟没充一样，有些免费的反而香，看完这个你就明白了',
+                '作为一个社恐硬着头皮测了两个月社交软件的人，以下数据可能拯救你的钱包和自尊',
+                '不吹不黑不恰饭，纯个人实测，哪些App是真能约哪些是割韭菜，一次讲清楚',
+                '实测党来了，两个月聊了几百号人约出来十几个，每个App的花费得吃率全公开',
+                '你还在为选哪个社交软件发愁？我帮你把坑都踩完了，直接告诉你答案',
+                '我花了一个月把社交软件当工作来测，每天聊每天约，以下是最真实的记录',
+                '这篇测评可能会得罪很多App，但我不在乎，我只在乎你们少踩坑多约会',
+                '兄弟们别再盲目充会员了，我花了八千多帮你们试出来了，哪个值哪个亏一看就知',
+                '有个事我憋了很久想吐槽，社交软件的水太深了，今天一次讲透让你们心里有数',
+                '两个月的血泪经验，我从一个社交小白变成了老司机，代价是花了不少冤枉钱和时间',
+                '以下内容可能引起部分App不适，但我保证每个字都是真的，数据为证',
+                '我来交作业了，上个月说的社交软件深度测评，今天全部分享出来，不藏私',
+                '别被那些广告骗了，社交软件的真实体验跟宣传差了十万八千里，看数据就懂了',
+                '测试了一个月，被放鸽子被照骗被托坑，但也有惊喜，以下是我的完整测评报告',
+                '说句掏心窝子的话，社交软件真的不是充钱就能得吃的，选对App比什么都重要',
+                '给兄弟们避雷来了，我把市面上主流的社交软件全下了，哪些能约哪些纯坑全在这了',
+                '社交软件这个东西吧，用对了是神器用错了是割韭菜机，我花了两个月帮你分清楚了',
+                '我承认我以前是社交软件氪金大户，踩了无数坑之后终于摸清了门道，分享给你们',
+                '这篇测评我从上个月就开始写了，反复验证反复修改，确保每个结论都有数据支撑',
             ];
             memoIntro = randPick(memoIntros);
         } catch(e) {}
@@ -2552,6 +3079,7 @@ async function generate(){
     var effectiveBgStyle = bgStyle;
     if(templateStyle==='memo') effectiveBgStyle='#FFFFFF';
     if(templateStyle==='wechat') effectiveBgStyle='#EDEDED';
+    if(templateStyle==='qq') effectiveBgStyle='#EBEBEB';
     if(templateStyle==='douyin') effectiveBgStyle='#1a1a1a';
     if(templateStyle==='xiaohongshu') effectiveBgStyle='#FFFFFF';
     if(templateStyle==='moments') effectiveBgStyle='#FFFFFF';
@@ -2562,6 +3090,32 @@ async function generate(){
     if(templateStyle==='pyramid') effectiveBgStyle='#0a1628';
     if(templateStyle==='rating-table') effectiveBgStyle='#FFFFFF';
     if(templateStyle==='category-card') effectiveBgStyle='#F5F0E8';
+    if(templateStyle==='plain-text') effectiveBgStyle=getBgSolidColor();
+    
+    // QQ聊天模板使用独立管线
+    if(templateStyle==='qq'){
+        currentQQDialog=generateQQDialog(currentData);
+        currentQQPages=await measureAndPackQQ(currentQQDialog);
+        currentPages=new Array(currentQQPages.length);
+        
+        previewArea.innerHTML='';
+        for(var qi=0;qi<currentQQPages.length;qi++){
+            var qhtml=renderQQDialogPage(qi);
+            var qwrapper=document.createElement('div');
+            qwrapper.className='card-preview';
+            qwrapper.innerHTML=qhtml;
+            qwrapper.style.transform='scale('+scale+')';
+            qwrapper.style.transformOrigin='top left';
+            qwrapper.style.width=Math.ceil(size.w*scale)+'px';
+            qwrapper.style.height=Math.ceil(size.h*scale)+'px';
+            qwrapper.style.overflow='hidden';
+            qwrapper.style.borderRadius='8px';
+            qwrapper.style.flexShrink='0';
+            (function(idx){qwrapper.onclick=function(){openQQModal(idx);};})(qi);
+            previewArea.appendChild(qwrapper);
+        }
+        return;
+    }
     
     // 微信聊天模板使用独立管线
     if(templateStyle==='wechat'){
@@ -2569,6 +3123,7 @@ async function generate(){
         currentWechatPages=await measureAndPackWechat(currentWechatDialog);
         currentPages=new Array(currentWechatPages.length);
         
+        previewArea.innerHTML='';
         for(var wi=0;wi<currentWechatPages.length;wi++){
             var whtml=renderWechatDialogPage(wi);
             var wwrapper=document.createElement('div');
@@ -2593,6 +3148,7 @@ async function generate(){
         currentDouyinPages=await measureAndPackDouyin(currentDouyinComments);
         currentPages=new Array(currentDouyinPages.length);
         
+        previewArea.innerHTML='';
         for(var di=0;di<currentDouyinPages.length;di++){
             var dhtml=renderDouyinPage(di);
             var dwrapper=document.createElement('div');
@@ -2616,6 +3172,7 @@ async function generate(){
         currentXiaohongshuPages=await measureAndPackXiaohongshu(currentData);
         currentPages=new Array(currentXiaohongshuPages.length);
         
+        previewArea.innerHTML='';
         for(var xhi=0;xhi<currentXiaohongshuPages.length;xhi++){
             var xhhtml=renderXiaohongshuPage(xhi);
             var xhwrapper=document.createElement('div');
@@ -2640,6 +3197,7 @@ async function generate(){
         currentMomentsPages=await measureAndPackMoments(currentData);
         currentPages=new Array(currentMomentsPages.length);
         
+        previewArea.innerHTML='';
         for(var mti=0;mti<currentMomentsPages.length;mti++){
             var mthtml=renderMomentsPage(mti);
             var mtwrapper=document.createElement('div');
@@ -2663,6 +3221,7 @@ async function generate(){
         currentDoubanPages=await measureAndPackDouban(currentData);
         currentPages=new Array(currentDoubanPages.length);
         
+        previewArea.innerHTML='';
         for(var dbi=0;dbi<currentDoubanPages.length;dbi++){
             var dbhtml=renderDoubanPage(dbi);
             var dbwrapper=document.createElement('div');
@@ -2686,6 +3245,7 @@ async function generate(){
         currentWeiboPages=await measureAndPackWeibo(currentData);
         currentPages=new Array(currentWeiboPages.length);
         
+        previewArea.innerHTML='';
         for(var wbi=0;wbi<currentWeiboPages.length;wbi++){
             var wbhtml=renderWeiboPage(wbi);
             var wbwrapper=document.createElement('div');
@@ -2709,6 +3269,7 @@ async function generate(){
         currentNotionPages=await measureAndPackNotion(currentData);
         currentPages=new Array(currentNotionPages.length);
         
+        previewArea.innerHTML='';
         for(var nti=0;nti<currentNotionPages.length;nti++){
             var nthtml=renderNotionPage(nti);
             var ntwrapper=document.createElement('div');
@@ -2732,6 +3293,7 @@ async function generate(){
         currentFeishuPages=await measureAndPackFeishu(currentData);
         currentPages=new Array(currentFeishuPages.length);
         
+        previewArea.innerHTML='';
         for(var fsi=0;fsi<currentFeishuPages.length;fsi++){
             var fshtml=renderFeishuPage(fsi);
             var fswrapper=document.createElement('div');
@@ -2755,6 +3317,7 @@ async function generate(){
         currentPyramidPages=await measureAndPackPyramid(currentData);
         currentPages=new Array(currentPyramidPages.length);
         
+        previewArea.innerHTML='';
         for(var pyi=0;pyi<currentPyramidPages.length;pyi++){
             var pyhtml=renderPyramidPage(pyi);
             var pywrapper=document.createElement('div');
@@ -2778,6 +3341,7 @@ async function generate(){
         currentRatingTablePages=await measureAndPackRatingTable(currentData);
         currentPages=new Array(currentRatingTablePages.length);
         
+        previewArea.innerHTML='';
         for(var rti=0;rti<currentRatingTablePages.length;rti++){
             var rthtml=renderRatingTablePage(rti);
             var rtwrapper=document.createElement('div');
@@ -2801,6 +3365,7 @@ async function generate(){
         currentCategoryCardPages=await measureAndPackCategoryCard(currentData);
         currentPages=new Array(currentCategoryCardPages.length);
         
+        previewArea.innerHTML='';
         for(var cci=0;cci<currentCategoryCardPages.length;cci++){
             var cchtml=renderCategoryCardPage(cci);
             var ccwrapper=document.createElement('div');
@@ -2822,6 +3387,7 @@ async function generate(){
     // 真实测量+分页
     currentPages=await measureAndPack(currentData,effectiveBgStyle);
     
+    previewArea.innerHTML='';
     currentPages.forEach((page,pageIdx)=>{
         const apps=page.indices.map(i=>currentData[i]);
         const isLast=(pageIdx===currentPages.length-1);
@@ -2839,11 +3405,18 @@ async function generate(){
         wrapper.onclick=()=>openModal(pageIdx);
         previewArea.appendChild(wrapper);
     });
+    previewArea.scrollIntoView({behavior:'smooth',block:'start'});
+    }finally{
+        var floatBtn=document.getElementById('floatingGenBtn');
+        if(floatBtn){floatBtn.disabled=false;floatBtn.textContent='🔄 生成';}
+    }
 }
 
 async function exportAll(){
     var templateStyle=document.getElementById('templateStyle').value;
     if(isDiaryMode&&currentDiaryPages.length===0){alert('请先点击「生成」');return;}
+    var isQQMode=(templateStyle==='qq');
+    var isQQMode=(templateStyle==='qq');
     var isWechatMode=(templateStyle==='wechat');
     var isDouyinMode=(templateStyle==='douyin');
     var isXiaohongshuMode=(templateStyle==='xiaohongshu');
@@ -2851,7 +3424,8 @@ async function exportAll(){
     var isPyramidMode=(templateStyle==='pyramid');
     var isRatingTableMode=(templateStyle==='rating-table');
     var isCategoryCardMode=(templateStyle==='category-card');
-    if(!isDiaryMode&&!isWechatMode&&!isDouyinMode&&!isXiaohongshuMode&&!isMomentsMode&&!isPyramidMode&&!isRatingTableMode&&!isCategoryCardMode&&!currentPages.length){alert('请先点击「生成」');return;}
+    if(!isDiaryMode&&!isQQMode&&!isWechatMode&&!isDouyinMode&&!isXiaohongshuMode&&!isMomentsMode&&!isPyramidMode&&!isRatingTableMode&&!isCategoryCardMode&&!currentPages.length){alert('请先点击「生成」');return;}
+    if(isQQMode&&currentQQPages.length===0){alert('请先点击「生成」');return;}
     if(isWechatMode&&currentWechatPages.length===0){alert('请先点击「生成」');return;}
     if(isDouyinMode&&currentDouyinPages.length===0){alert('请先点击「生成」');return;}
     if(isXiaohongshuMode&&currentXiaohongshuPages.length===0){alert('请先点击「生成」');return;}
@@ -2869,7 +3443,7 @@ async function exportAll(){
     const exportContainer=document.getElementById('exportContainer');
     let success=0;
     
-    var totalPages=isDiaryMode?currentDiaryPages.length:(isWechatMode?currentWechatPages.length:(isDouyinMode?currentDouyinPages.length:(isXiaohongshuMode?currentXiaohongshuPages.length:(isMomentsMode?currentMomentsPages.length:(isPyramidMode?currentPyramidPages.length:(isRatingTableMode?currentRatingTablePages.length:(isCategoryCardMode?currentCategoryCardPages.length:currentPages.length)))))));
+    var totalPages=isDiaryMode?currentDiaryPages.length:(isQQMode?currentQQPages.length:(isWechatMode?currentWechatPages.length:(isDouyinMode?currentDouyinPages.length:(isXiaohongshuMode?currentXiaohongshuPages.length:(isMomentsMode?currentMomentsPages.length:(isPyramidMode?currentPyramidPages.length:(isRatingTableMode?currentRatingTablePages.length:(isCategoryCardMode?currentCategoryCardPages.length:currentPages.length))))))));
     
     for(let i=0;i<totalPages;i++){
         try{
@@ -2878,6 +3452,12 @@ async function exportAll(){
             if(isDiaryMode){
                 html=renderDiaryPageByIdx(i);
                 pageName=i===0?'封面':'第'+(i)+'页';
+            }else if(isQQMode){
+                html=renderQQDialogPage(i);
+                pageName='QQ聊天_'+(i+1);
+            }else if(isQQMode){
+                html=renderQQDialogPage(i);
+                pageName='QQ聊天_'+(i+1);
             }else if(isWechatMode){
                 html=renderWechatDialogPage(i);
                 pageName='微信聊天_'+(i+1);
@@ -2912,7 +3492,7 @@ async function exportAll(){
             exportContainer.innerHTML=html;
             await new Promise(r=>setTimeout(r,300));
             const el=exportContainer.firstElementChild;
-            var bgColor=isDiaryMode?DIARY_COLORS.bg:(isWechatMode?'#EDEDED':(isDouyinMode?'#1a1a1a':(isXiaohongshuMode?'#FFFFFF':(isMomentsMode?'#FFFFFF':(isPyramidMode?'#0a1628':(isRatingTableMode?'#FFFFFF':(isCategoryCardMode?'#F5F0E8':(templateStyle==='memo'?'#FFFFFF':getBgSolidColor()))))))));
+            var bgColor=isDiaryMode?DIARY_COLORS.bg:(isQQMode?'#EBEBEB':(isWechatMode?'#EDEDED':(isDouyinMode?'#1a1a1a':(isXiaohongshuMode?'#FFFFFF':(isMomentsMode?'#FFFFFF':(isPyramidMode?'#0a1628':(isRatingTableMode?'#FFFFFF':(isCategoryCardMode?'#F5F0E8':(templateStyle==='memo'?'#FFFFFF':getBgSolidColor())))))))));
             const canvas=await html2canvas(el,{scale:2,backgroundColor:bgColor,useCORS:true,width:size.w,height:size.h});
             if(canvas.width<10)throw new Error('截图异常');
             const blob=await new Promise((res,rej)=>{canvas.toBlob(b=>{if(!b||b.size<100)rej(new Error('图片为空'));else res(b);},'image/jpeg',0.95);});
@@ -2941,6 +3521,8 @@ let savePhoneIndex=0;
 async function saveToPhone(){
     var templateStyle=document.getElementById('templateStyle').value;
     if(isDiaryMode&&currentDiaryPages.length===0){alert('请先点击「生成」');return;}
+    var isQQMode=(templateStyle==='qq');
+    var isQQMode=(templateStyle==='qq');
     var isWechatMode=(templateStyle==='wechat');
     var isDouyinMode=(templateStyle==='douyin');
     var isXiaohongshuMode=(templateStyle==='xiaohongshu');
@@ -2948,7 +3530,8 @@ async function saveToPhone(){
     var isPyramidMode=(templateStyle==='pyramid');
     var isRatingTableMode=(templateStyle==='rating-table');
     var isCategoryCardMode=(templateStyle==='category-card');
-    if(!isDiaryMode&&!isWechatMode&&!isDouyinMode&&!isXiaohongshuMode&&!isMomentsMode&&!isPyramidMode&&!isRatingTableMode&&!isCategoryCardMode&&!currentPages.length){alert('请先点击「生成」');return;}
+    if(!isDiaryMode&&!isQQMode&&!isWechatMode&&!isDouyinMode&&!isXiaohongshuMode&&!isMomentsMode&&!isPyramidMode&&!isRatingTableMode&&!isCategoryCardMode&&!currentPages.length){alert('请先点击「生成」');return;}
+    if(isQQMode&&currentQQPages.length===0){alert('请先点击「生成」');return;}
     if(isWechatMode&&currentWechatPages.length===0){alert('请先点击「生成」');return;}
     if(isDouyinMode&&currentDouyinPages.length===0){alert('请先点击「生成」');return;}
     if(isXiaohongshuMode&&currentXiaohongshuPages.length===0){alert('请先点击「生成」');return;}
@@ -2961,7 +3544,7 @@ async function saveToPhone(){
     progressText.textContent='📱 正在生成图片...';
     savePhoneImages=[];
     const exportContainer=document.getElementById('exportContainer');
-    var totalPages=isDiaryMode?currentDiaryPages.length:(isWechatMode?currentWechatPages.length:(isDouyinMode?currentDouyinPages.length:(isXiaohongshuMode?currentXiaohongshuPages.length:(isMomentsMode?currentMomentsPages.length:(isPyramidMode?currentPyramidPages.length:(isRatingTableMode?currentRatingTablePages.length:(isCategoryCardMode?currentCategoryCardPages.length:currentPages.length)))))));
+    var totalPages=isDiaryMode?currentDiaryPages.length:(isQQMode?currentQQPages.length:(isWechatMode?currentWechatPages.length:(isDouyinMode?currentDouyinPages.length:(isXiaohongshuMode?currentXiaohongshuPages.length:(isMomentsMode?currentMomentsPages.length:(isPyramidMode?currentPyramidPages.length:(isRatingTableMode?currentRatingTablePages.length:(isCategoryCardMode?currentCategoryCardPages.length:currentPages.length))))))));
     for(let i=0;i<totalPages;i++){
         try{
             var html;
@@ -2993,7 +3576,7 @@ async function saveToPhone(){
             exportContainer.innerHTML=html;
             await new Promise(r=>setTimeout(r,300));
             const el=exportContainer.firstElementChild;
-            var bgColor=isDiaryMode?DIARY_COLORS.bg:(isWechatMode?'#EDEDED':(isDouyinMode?'#1a1a1a':(isXiaohongshuMode?'#FFFFFF':(isMomentsMode?'#FFFFFF':(isPyramidMode?'#0a1628':(isRatingTableMode?'#FFFFFF':(isCategoryCardMode?'#F5F0E8':(templateStyle==='memo'?'#FFFFFF':getBgSolidColor()))))))));
+            var bgColor=isDiaryMode?DIARY_COLORS.bg:(isQQMode?'#EBEBEB':(isWechatMode?'#EDEDED':(isDouyinMode?'#1a1a1a':(isXiaohongshuMode?'#FFFFFF':(isMomentsMode?'#FFFFFF':(isPyramidMode?'#0a1628':(isRatingTableMode?'#FFFFFF':(isCategoryCardMode?'#F5F0E8':(templateStyle==='memo'?'#FFFFFF':getBgSolidColor())))))))));
             const canvas=await html2canvas(el,{scale:2,backgroundColor:bgColor,useCORS:true,width:size.w,height:size.h});
             const dataUrl=canvas.toDataURL('image/jpeg',0.95);
             savePhoneImages.push(dataUrl);
@@ -3033,6 +3616,206 @@ function savePhoneNav(dir){
 function closeSavePhone(){
     document.getElementById('savePhoneOverlay').classList.remove('show');
     savePhoneImages=[];
+}
+
+// ===== 复制图片到剪贴板（兼容非HTTPS环境） =====
+function fallbackCopy(canvas, resolve, reject) {
+    try {
+        var div = document.createElement('div');
+        div.contentEditable = true;
+        div.style.position = 'fixed';
+        div.style.left = '-9999px';
+        div.style.top = '0';
+        document.body.appendChild(div);
+        var img = document.createElement('img');
+        img.src = canvas.toDataURL('image/png');
+        div.appendChild(img);
+        var range = document.createRange();
+        range.selectNode(img);
+        var sel = window.getSelection();
+        sel.removeAllRanges();
+        sel.addRange(range);
+        var ok = document.execCommand('copy');
+        sel.removeAllRanges();
+        document.body.removeChild(div);
+        if (ok) resolve();
+        else reject('execCommand copy failed');
+    } catch(e) {
+        reject(e);
+    }
+}
+
+function copyCanvasToClipboard(canvas) {
+    return new Promise(function(resolve, reject) {
+        if (navigator.clipboard && typeof ClipboardItem !== 'undefined') {
+            canvas.toBlob(function(blob) {
+                if (!blob) { reject('toBlob failed'); return; }
+                navigator.clipboard.write([
+                    new ClipboardItem({ 'image/png': blob })
+                ]).then(resolve).catch(function() {
+                    fallbackCopy(canvas, resolve, reject);
+                });
+            }, 'image/png');
+        } else {
+            fallbackCopy(canvas, resolve, reject);
+        }
+    });
+}
+
+function openImageInNewTab(canvas) {
+    var w = window.open('');
+    if (w) {
+        var imgSrc = canvas.toDataURL('image/png');
+        w.document.write('<html><head><title>图片 - 右键复制</title></head><body style="margin:0;display:flex;justify-content:center;align-items:center;min-height:100vh;background:#222;"><div style="text-align:center"><p style="color:#fff;font-size:16px;margin-bottom:12px;">右键点击图片 → 复制图片</p><img src="' + imgSrc + '" style="max-width:100%;"/></div></body></html>');
+        w.document.close();
+    }
+}
+
+async function copyImageToClipboard(){
+    var templateStyle=document.getElementById('templateStyle').value;
+    if(isDiaryMode&&currentDiaryPages.length===0){alert('请先点击「生成」');return;}
+    var isQQMode=(templateStyle==='qq');
+    var isWechatMode=(templateStyle==='wechat');
+    var isDouyinMode=(templateStyle==='douyin');
+    var isXiaohongshuMode=(templateStyle==='xiaohongshu');
+    var isMomentsMode=(templateStyle==='moments');
+    var isPyramidMode=(templateStyle==='pyramid');
+    var isRatingTableMode=(templateStyle==='rating-table');
+    var isCategoryCardMode=(templateStyle==='category-card');
+    if(!isDiaryMode&&!isQQMode&&!isWechatMode&&!isDouyinMode&&!isXiaohongshuMode&&!isMomentsMode&&!isPyramidMode&&!isRatingTableMode&&!isCategoryCardMode&&!currentPages.length){alert('请先点击「生成」');return;}
+    if(isQQMode&&currentQQPages.length===0){alert('请先点击「生成」');return;}
+    if(isWechatMode&&currentWechatPages.length===0){alert('请先点击「生成」');return;}
+    if(isDouyinMode&&currentDouyinPages.length===0){alert('请先点击「生成」');return;}
+    if(isXiaohongshuMode&&currentXiaohongshuPages.length===0){alert('请先点击「生成」');return;}
+    if(isMomentsMode&&currentMomentsPages.length===0){alert('请先点击「生成」');return;}
+    if(isPyramidMode&&currentPyramidPages.length===0){alert('请先点击「生成」');return;}
+    if(isRatingTableMode&&currentRatingTablePages.length===0){alert('请先点击「生成」');return;}
+    if(isCategoryCardMode&&currentCategoryCardPages.length===0){alert('请先点击「生成」');return;}
+    const btn=document.querySelector('.btn-copy');
+    const origText=btn.textContent;
+    btn.textContent='⏳ 生成中...';
+    btn.disabled=true;
+    try{
+        const size=getPageSize();
+        const exportContainer=document.getElementById('exportContainer');
+        var html;
+        if(isDiaryMode){
+            html=renderDiaryPageByIdx(0);
+        }else if(isWechatMode){
+            html=renderWechatDialogPage(0);
+        }else if(isDouyinMode){
+            html=renderDouyinPage(0);
+        }else if(isXiaohongshuMode){
+            html=renderXiaohongshuPage(0);
+        }else if(isMomentsMode){
+            html=renderMomentsPage(0);
+        }else if(isPyramidMode){
+            html=renderPyramidPage(0);
+        }else if(isRatingTableMode){
+            html=renderRatingTablePage(0);
+        }else if(isCategoryCardMode){
+            html=renderCategoryCardPage(0);
+        }else{
+            var bgStyle=getBgStyle();
+            var bgSolidColor=getBgSolidColor();
+            if(templateStyle==='memo'){bgStyle='#FFFFFF';bgSolidColor='#FFFFFF';}
+            const page=currentPages[0];
+            const apps=page.indices.map(idx=>currentData[idx]);
+            const isLast=(currentPages.length===1);
+            html=renderPage(apps,page.indices,bgStyle,page.isFirst,isLast);
+        }
+        exportContainer.innerHTML=html;
+        await new Promise(r=>setTimeout(r,300));
+        const el=exportContainer.firstElementChild;
+        var bgColor=isDiaryMode?DIARY_COLORS.bg:(isQQMode?'#EBEBEB':(isWechatMode?'#EDEDED':(isDouyinMode?'#1a1a1a':(isXiaohongshuMode?'#FFFFFF':(isMomentsMode?'#FFFFFF':(isPyramidMode?'#0a1628':(isRatingTableMode?'#FFFFFF':(isCategoryCardMode?'#F5F0E8':(templateStyle==='memo'?'#FFFFFF':getBgSolidColor())))))))));
+        const canvas=await html2canvas(el,{scale:2,backgroundColor:bgColor,useCORS:true,width:size.w,height:size.h});
+        exportContainer.innerHTML='';
+        await copyCanvasToClipboard(canvas);
+        btn.textContent='✅ 已复制';
+        setTimeout(()=>{btn.textContent=origText;btn.disabled=false;},2000);
+    }catch(e){
+        console.error('复制失败:',e);
+        btn.textContent='❌ 复制失败';
+        setTimeout(()=>{btn.textContent=origText;btn.disabled=false;},2000);
+        // 最终 fallback：在新标签页打开图片
+        try{
+            const size2=getPageSize();
+            const exportContainer2=document.getElementById('exportContainer');
+            var html2;
+            if(isDiaryMode){html2=renderDiaryPageByIdx(0);}
+            else if(isWechatMode){html2=renderWechatDialogPage(0);}
+            else if(isDouyinMode){html2=renderDouyinPage(0);}
+            else if(isXiaohongshuMode){html2=renderXiaohongshuPage(0);}
+            else if(isMomentsMode){html2=renderMomentsPage(0);}
+            else if(isPyramidMode){html2=renderPyramidPage(0);}
+            else if(isRatingTableMode){html2=renderRatingTablePage(0);}
+            else if(isCategoryCardMode){html2=renderCategoryCardPage(0);}
+            else{
+                var bgStyle2=getBgStyle();var bgSolidColor2=getBgSolidColor();
+                if(templateStyle==='memo'){bgStyle2='#FFFFFF';bgSolidColor2='#FFFFFF';}
+                const page2=currentPages[0];const apps2=page2.indices.map(idx=>currentData[idx]);
+                html2=renderPage(apps2,page2.indices,bgStyle2,page2.isFirst,currentPages.length===1);
+            }
+            exportContainer2.innerHTML=html2;
+            await new Promise(r=>setTimeout(r,300));
+            const el2=exportContainer2.firstElementChild;
+            var bgColor2=isDiaryMode?DIARY_COLORS.bg:(isQQMode?'#EBEBEB':(isWechatMode?'#EDEDED':(isDouyinMode?'#1a1a1a':(isXiaohongshuMode?'#FFFFFF':(isMomentsMode?'#FFFFFF':(isPyramidMode?'#0a1628':(isRatingTableMode?'#FFFFFF':(isCategoryCardMode?'#F5F0E8':(templateStyle==='memo'?'#FFFFFF':getBgSolidColor())))))))));
+            const canvas2=await html2canvas(el2,{scale:2,backgroundColor:bgColor2,useCORS:true,width:size2.w,height:size2.h});
+            exportContainer2.innerHTML='';
+            openImageInNewTab(canvas2);
+            alert('当前环境不支持直接复制，图片已在新标签页打开，请右键图片 → 复制图片');
+        }catch(e2){
+            alert('复制失败，请使用下载方式\n错误：'+e.message);
+        }
+    }
+}
+
+async function copyCurrentSavePhoneImage(){
+    if(savePhoneImages.length===0)return;
+    const btn=document.getElementById('savePhoneCopyBtn');
+    const origText=btn.textContent;
+    btn.textContent='⏳ 复制中...';
+    btn.disabled=true;
+    try{
+        const dataUrl=savePhoneImages[savePhoneIndex];
+        const img=new Image();
+        await new Promise((resolve,reject)=>{
+            img.onload=resolve;
+            img.onerror=reject;
+            img.src=dataUrl;
+        });
+        const cvs=document.createElement('canvas');
+        cvs.width=img.naturalWidth;
+        cvs.height=img.naturalHeight;
+        const ctx=cvs.getContext('2d');
+        ctx.drawImage(img,0,0);
+        await copyCanvasToClipboard(cvs);
+        btn.textContent='✅ 已复制';
+        setTimeout(()=>{btn.textContent=origText;btn.disabled=false;},2000);
+    }catch(e){
+        console.error('复制失败:',e);
+        btn.textContent='❌ 失败';
+        setTimeout(()=>{btn.textContent=origText;btn.disabled=false;},2000);
+        // 最终 fallback：在新标签页打开图片
+        try{
+            const dataUrl=savePhoneImages[savePhoneIndex];
+            const img2=new Image();
+            await new Promise((resolve,reject)=>{
+                img2.onload=resolve;
+                img2.onerror=reject;
+                img2.src=dataUrl;
+            });
+            const cvs2=document.createElement('canvas');
+            cvs2.width=img2.naturalWidth;
+            cvs2.height=img2.naturalHeight;
+            const ctx2=cvs2.getContext('2d');
+            ctx2.drawImage(img2,0,0);
+            openImageInNewTab(cvs2);
+            alert('当前环境不支持直接复制，图片已在新标签页打开，请右键图片 → 复制图片');
+        }catch(e2){
+            alert('复制失败，请使用下载方式\n错误：'+e.message);
+        }
+    }
 }
 
 
@@ -3474,6 +4257,14 @@ function renderMemoHomeBar(phoneStyle){
         +'</div>';
 }
 
+// 备忘录随机emoji标记池
+const MEMO_EMOJIS = ['⭐','❗','🔥','✅','❌','💯','📌','🎯','💪','👍','👀','💬','🌟','💡','📝','🏆','⚡','🚀','💎','🔔','🏷️','🎵','📸','🧠','🤔','😎','🙌','✨','❤️','🎈'];
+
+// 随机获取一个备忘录emoji
+function pickMemoEmoji(){
+    return MEMO_EMOJIS[Math.floor(Math.random()*MEMO_EMOJIS.length)];
+}
+
 // 渲染单个APP的备忘录段落（用于测量和渲染）
 function renderMemoAppEntry(app, idx, phoneStyle, fontSize, lineHeight){
     var isMine = app.is_mine;
@@ -3488,25 +4279,30 @@ function renderMemoAppEntry(app, idx, phoneStyle, fontSize, lineHeight){
     
     var html = '<div style="margin-bottom:20px;">';
     // 软件名：加粗+大字号
-    html += '<div style="font-size:'+nameSize+'px;font-weight:700;margin-bottom:4px;color:'+textColor+';">' + app.name + '</div>';
+    var nameEmoji = pickMemoEmoji();
+    html += '<div style="font-size:'+nameSize+'px;font-weight:700;margin-bottom:4px;color:'+textColor+';">' + nameEmoji + ' ' + app.name + '</div>';
     // 数据行：缩进，灰色，紧凑行高
-    html += '<div style="font-size:'+textSize+'px;line-height:'+lh+';color:'+subColor+';margin-left:0px;margin-bottom:6px;">' + dataText + '</div>';
+    var dataEmoji = pickMemoEmoji();
+    html += '<div style="font-size:'+textSize+'px;line-height:'+lh+';color:'+subColor+';margin-left:0px;margin-bottom:6px;">' + dataEmoji + ' ' + dataText + '</div>';
     // review
     if(app.review){
-        html += '<div style="font-size:'+textSize+'px;line-height:'+lh+';color:'+textColor+';margin-bottom:4px;">' + app.review + '</div>';
+        var reviewEmoji = pickMemoEmoji();
+        html += '<div style="font-size:'+textSize+'px;line-height:'+lh+';color:'+textColor+';margin-bottom:4px;">' + reviewEmoji + ' ' + app.review + '</div>';
     }
     // 故事：按\n\n分段渲染
     if(app.story){
         var paragraphs = app.story.split(/\n\n+/);
         paragraphs.forEach(function(p){
             if(p.trim()){
-                html += '<div style="font-size:'+textSize+'px;line-height:'+lh+';color:'+textColor+';margin-bottom:6px;">' + p.trim() + '</div>';
+                var storyEmoji = pickMemoEmoji();
+                html += '<div style="font-size:'+textSize+'px;line-height:'+lh+';color:'+textColor+';margin-bottom:6px;">' + storyEmoji + ' ' + p.trim() + '</div>';
             }
         });
     }
     // 缺点
     if(app.con){
-        html += '<div style="font-size:'+textSize+'px;line-height:'+lh+';color:'+subColor+';margin-top:4px;">不过' + app.con + '</div>';
+        var conEmoji = pickMemoEmoji();
+        html += '<div style="font-size:'+textSize+'px;line-height:'+lh+';color:'+subColor+';margin-top:4px;">' + conEmoji + ' 不过' + app.con + '</div>';
     }
     // 分割线
     if(idx < 999){
@@ -3638,140 +4434,622 @@ var myWechatName = '';
 var myWechatColor = '';
 var leftWechatName = '';
 var leftWechatColor = '';
+var myCustomAvatar = '';
+var otherCustomAvatar = '';
 
-function randomizeWechatUsers(){
-    myWechatName = randPick(wechatUserNames);
+function getWechatUserNames(){
+    var myInput = document.getElementById('wechatMyName');
+    var otherInput = document.getElementById('wechatOtherName');
+    myWechatName = (myInput && myInput.value.trim()) ? myInput.value.trim() : randPick(wechatUserNames);
     myWechatColor = randPick(wechatAvatarColors);
-    // 群里发测评的人（不同于我）
-    var remaining = wechatUserNames.filter(function(n){return n !== myWechatName;});
-    leftWechatName = randPick(remaining);
+    var otherName = (otherInput && otherInput.value.trim()) ? otherInput.value.trim() : '';
+    if(!otherName){
+        var remaining = wechatUserNames.filter(function(n){return n !== myWechatName;});
+        otherName = randPick(remaining);
+    }
+    leftWechatName = otherName;
     leftWechatColor = randPick(wechatAvatarColors.filter(function(c){return c !== myWechatColor;}));
+    // Update input fields if they were random
+    if(myInput && !myInput.value.trim()) myInput.value = myWechatName;
+    if(otherInput && !otherInput.value.trim()) otherInput.value = leftWechatName;
 }
 
 // 生成微信头像（真实头像+fallback彩色方块）
+
+// ============ QQ聊天模板 ============
+const QQ_COLORS = {
+    bg: '#EBEBEB',
+    navBg: '#E5E5E5',
+    navText: '#000',
+    inputBg: '#F5F5F5',
+    bubbleLeft: '#FFFFFF',
+    bubbleRight: '#00BFFF',
+    bubbleText: '#000',
+    bubbleRightText: '#000',
+    divider: '#D9D9D9',
+};
+
+function renderQQNavBar(){
+    var displayName = leftWechatName || '好友';
+    return '<div style="background:'+QQ_COLORS.navBg+';padding:40px 20px 16px;display:flex;align-items:center;border-bottom:1px solid #D0D0D0;">'
+        + '<span style="color:'+QQ_COLORS.navText+';font-size:28px;font-weight:300;">&#8249;</span>'
+        + '<span style="flex:1;text-align:center;font-size:28px;font-weight:500;color:'+QQ_COLORS.navText+';">' + displayName + '</span>'
+        + '<span style="color:'+QQ_COLORS.navText+';font-size:24px;">&#8942;</span>'
+        + '</div>';
+}
+
+function renderQQInputBar(){
+    return '<div style="background:'+QQ_COLORS.inputBg+';padding:10px 16px;display:flex;align-items:center;gap:10px;border-top:1px solid #E0E0E0;flex-shrink:0;">'
+        + '<svg width="36" height="36" viewBox="0 0 24 24" fill="none"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z" fill="#666"/><path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z" fill="#666"/></svg>'
+        + '<div style="flex:1;background:#FFF;border-radius:20px;padding:8px 14px;min-height:24px;border:1px solid #E0E0E0;font-size:18px;color:#999;"></div>'
+        + '<svg width="36" height="36" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="#F7C948"/><circle cx="9" cy="11" r="1.5" fill="#333"/><circle cx="15" cy="11" r="1.5" fill="#333"/><path d="M8.5 14.5c1.2 2 6.3 2 7 0" stroke="#333" stroke-width="1.5" fill="none"/></svg>'
+        + '<svg width="36" height="36" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="#666" stroke-width="1.5" fill="none"/><line x1="12" y1="8" x2="12" y2="16" stroke="#666" stroke-width="2"/><line x1="8" y1="12" x2="16" y2="12" stroke="#666" stroke-width="2"/></svg>'
+        + '</div>';
+}
+
+function generateQQDialog(apps){
+    getWechatUserNames();
+    var dialog = [];
+    
+    var myOpenings = [
+        '兄弟，社交软件真能得吃吗',
+        '社交软件到底能不能约出来人啊',
+        '那些交友App真的有用吗',
+        '社交软件靠谱吗给说说',
+        '你们用社交软件真约出来过吗',
+    ];
+    dialog.push({type: 'right', text: randPick(myOpenings), name: myWechatName, color: myWechatColor});
+    
+    var hisOpenings = [
+        '说实话，真金白银测了一个月，差距太大了',
+        '我跟你说，花了不少钱全测了一遍，有些真不行',
+        '别提了，花了一个月测了十几个，结论就是选对App太重要了',
+        '我认真测了一个月，每个都花了钱约过人，给你说说真实体验',
+    ];
+    dialog.push({type: 'left', text: randPick(hisOpenings), name: leftWechatName, color: leftWechatColor});
+    
+    // 排序：is_mine的自家APP排在前面（与面第2位，识俏社第3位）
+    var sortedApps = [];
+    var mineApps = [];
+    apps.forEach(function(app){
+        if(app.is_mine) mineApps.push(app);
+        else sortedApps.push(app);
+    });
+    // 按mine_rank排序自家APP（与面排前）
+    mineApps.sort(function(a,b){return (a.mine_rank||1)-(b.mine_rank||1);});
+    if(mineApps.length >= 2 && sortedApps.length > 0){
+        sortedApps.splice(1, 0, mineApps[0]);
+        sortedApps.splice(2, 0, mineApps[1]);
+    } else if(mineApps.length >= 2){
+        sortedApps = mineApps.concat(sortedApps);
+    } else if(mineApps.length === 1){
+        if(sortedApps.length > 0) sortedApps.splice(1, 0, mineApps[0]);
+        else sortedApps.unshift(mineApps[0]);
+    }
+    
+    sortedApps.forEach(function(app, idx){
+        var isMine = app.is_mine;
+        
+        if(isMine){
+            var yumianIntros = [
+                '再说说'+app.name+'，这个是我测下来体验最好的',
+                '重点来了，'+app.name+'是这波里最推荐的',
+                '跟你说，'+app.name+'是唯一让我觉得值回票价的',
+                '必须提一下'+app.name+'，体验真的不一样',
+            ];
+            var appText = randPick(yumianIntros) + '，匹配了' + app.match + '个，加好友' + app.add_friend + '人，约出来' + app.date + '个，花了' + app.cost + '，得吃率' + app.rate;
+            if(app.review) appText += '。' + app.review;
+            if(app.story) appText += '\n' + app.story;
+            dialog.push({type: 'left', text: appText, name: leftWechatName, color: leftWechatColor, isMineApp: true});
+        } else {
+            var normalIntros = [
+                '再说说' + app.name + '，',
+                app.name + '嘛，',
+                '聊下' + app.name + '，',
+                app.name + '这个，',
+            ];
+            var appText = randPick(normalIntros) + '匹配了' + app.match + '个，加好友' + app.add_friend + '人，约出来' + app.date + '个，花了' + app.cost;
+            if(app.rate) appText += '，得吃率' + app.rate;
+            if(app.review) appText += '。' + app.review;
+            if(app.story) appText += '\n' + app.story;
+            dialog.push({type: 'left', text: appText, name: leftWechatName, color: leftWechatColor});
+        }
+    });
+    
+    var myAppBestName = apps.find(function(a){return a.is_mine;}) ? apps.filter(function(a){return a.is_mine;})[0].name : '与面';
+    var summaries = [
+        '所以结论就是，'+myAppBestName+'真值得试试，其他的看你自己',
+        '总结一下，选对App太重要了，'+myAppBestName+'是我最推荐的',
+        '反正你先试'+myAppBestName+'，其他的再说',
+        '测了一个月，'+myAppBestName+'是唯一让我觉得值的',
+    ];
+    dialog.push({type: 'left', text: randPick(summaries), name: leftWechatName, color: leftWechatColor});
+    
+    return dialog;
+}
+
+let currentQQDialog = [];
+let currentQQPages = [];
+
+function renderQQAvatar(name, bgColor, isRight){
+    var ch = name.charAt(0);
+    var avatarSrc = '';
+    if(isRight && myCustomAvatar){
+        avatarSrc = myCustomAvatar;
+    } else if(!isRight && otherCustomAvatar){
+        avatarSrc = otherCustomAvatar;
+    } else if(isRight){
+        avatarSrc = ANIME_AVATARS[0];
+    } else {
+        var hash = 0;
+        for(var i=0;i<name.length;i++) hash = ((hash<<5)-hash)+name.charCodeAt(i);
+        avatarSrc = ANIME_AVATARS[Math.abs(hash) % ANIME_AVATARS.length];
+    }
+    var size = 72;
+    return '<div style="width:'+size+'px;height:'+size+'px;border-radius:50%;overflow:hidden;flex-shrink:0;background:'+bgColor+';display:flex;align-items:center;justify-content:center;">'
+        + (avatarSrc ? '<img src="'+avatarSrc+'" style="width:100%;height:100%;object-fit:cover;" />' : '<span style="color:#fff;font-size:28px;font-weight:700;">'+ch+'</span>')
+        + '</div>';
+}
+
+function renderQQMessage(msg){
+    var html = '';
+    
+    if(msg.type === 'left' || msg.type === 'left-highlight'){
+        var isHighlight = false;
+        var bubbleBg = QQ_COLORS.bubbleLeft;
+        var bubbleBorder = isHighlight ? 'border:1.5px solid #FF9500;' : '';
+        var bubbleShadow = 'box-shadow:0 1px 2px rgba(0,0,0,0.08);';
+        var uName = msg.name || leftWechatName;
+        var uColor = msg.color || leftWechatColor;
+        var text = msg.text.replace(/\n/g, '<br>');
+        
+        html = '<div style="display:flex;gap:12px;margin-bottom:16px;align-items:flex-start;">';
+        html += renderQQAvatar(uName, uColor, false);
+        html += '<div>';
+        html += '<div style="background:'+bubbleBg+';border-radius:0 18px 18px 18px;padding:14px 18px;max-width:520px;font-size:24px;line-height:1.6;color:'+QQ_COLORS.bubbleText+';'+bubbleBorder+bubbleShadow+'">';
+        html += text;
+        html += '</div></div></div>';
+    }
+    else if(msg.type === 'right'){
+        var uName = msg.name || myWechatName;
+        var uColor = msg.color || myWechatColor;
+        var text = msg.text.replace(/\n/g, '<br>');
+        html = '<div style="display:flex;gap:12px;margin-bottom:16px;align-items:flex-start;flex-direction:row-reverse;">';
+        html += renderQQAvatar(uName, uColor, true);
+        html += '<div>';
+        html += '<div style="background:'+QQ_COLORS.bubbleRight+';border-radius:18px 0 18px 18px;padding:14px 18px;max-width:520px;font-size:24px;line-height:1.6;color:'+QQ_COLORS.bubbleRightText+';">';
+        html += text;
+        html += '</div></div></div>';
+    }
+    
+    return html;
+}
+
+async function measureAndPackQQ(dialogItems){
+    var size = getPageSize();
+    var navH = 88;
+    var inputH = 56;
+    var padV = 24;
+    var usableH = size.h - navH - inputH - padV;
+    
+    var box = document.getElementById('measureBox');
+    box.style.width = size.w + 'px';
+    box.innerHTML = '';
+    
+    var msgHeights = [];
+    for(var i = 0; i < dialogItems.length; i++){
+        var div = document.createElement('div');
+        div.innerHTML = renderQQMessage(dialogItems[i]);
+        div.style.cssText = 'width:' + size.w + 'px;padding:0 24px;background:'+QQ_COLORS.bg+';font-family:-apple-system,\'PingFang SC\',\'Microsoft YaHei\',sans-serif;';
+        box.appendChild(div);
+        msgHeights.push(div.offsetHeight);
+    }
+    box.innerHTML = '';
+    
+    var pages = [];
+    var currentPageMsgs = [];
+    var currentH = 0;
+    
+    for(var j = 0; j < dialogItems.length; j++){
+        var mh = msgHeights[j];
+        if(currentPageMsgs.length === 0){
+            currentPageMsgs.push(j);
+            currentH = mh;
+        } else if(currentH + mh <= usableH){
+            currentPageMsgs.push(j);
+            currentH += mh;
+        } else {
+            pages.push({messageIndices: [].concat(currentPageMsgs)});
+            currentPageMsgs = [j];
+            currentH = mh;
+        }
+    }
+    if(currentPageMsgs.length > 0){
+        pages.push({messageIndices: [].concat(currentPageMsgs)});
+    }
+    
+    return pages;
+}
+
+function renderQQDialogPage(pageIdx){
+    var size = getPageSize();
+    var C = QQ_COLORS;
+    var pageData = currentQQPages[pageIdx];
+    if(!pageData) return '';
+    
+    var html = '<div style="width:' + size.w + 'px;height:' + size.h + 'px;background:' + C.bg + ';font-family:-apple-system,\'PingFang SC\',\'Microsoft YaHei\',sans-serif;display:flex;flex-direction:column;overflow:hidden;">';
+    
+    html += renderQQNavBar();
+    
+    html += '<div style="flex:1;padding:16px 24px 8px;overflow:hidden;">';
+    pageData.messageIndices.forEach(function(msgIdx){
+        html += renderQQMessage(currentQQDialog[msgIdx]);
+    });
+    html += '</div>';
+    
+    html += renderQQInputBar();
+    
+    html += '</div>';
+    return html;
+}
+
+function renderQQPage(pageApps, pageIndices, bgStyle, isFirst, isLast){
+    var size = getPageSize();
+    var html = renderQQDialogPage(currentQQPageIdx || 0);
+    return html;
+}
+
+
+const DOWNLOADED_AVATARS = [
+  "https://res.cloudinary.com/dh3k3mbfv/image/upload/avatars/avatar_01.png",
+  "https://res.cloudinary.com/dh3k3mbfv/image/upload/avatars/avatar_02.png",
+  "https://res.cloudinary.com/dh3k3mbfv/image/upload/avatars/avatar_03.png",
+  "https://res.cloudinary.com/dh3k3mbfv/image/upload/avatars/avatar_04.png",
+  "https://res.cloudinary.com/dh3k3mbfv/image/upload/avatars/avatar_05.png",
+  "https://res.cloudinary.com/dh3k3mbfv/image/upload/avatars/avatar_06.png",
+  "https://res.cloudinary.com/dh3k3mbfv/image/upload/avatars/avatar_07.png",
+  "https://res.cloudinary.com/dh3k3mbfv/image/upload/avatars/avatar_08.png",
+  "https://res.cloudinary.com/dh3k3mbfv/image/upload/avatars/avatar_09.png",
+  "https://res.cloudinary.com/dh3k3mbfv/image/upload/avatars/avatar_10.png",
+  "https://res.cloudinary.com/dh3k3mbfv/image/upload/avatars/cn_01.jpg",
+  "https://res.cloudinary.com/dh3k3mbfv/image/upload/avatars/cn_02.jpg",
+  "https://res.cloudinary.com/dh3k3mbfv/image/upload/avatars/cn_03.jpg",
+  "https://res.cloudinary.com/dh3k3mbfv/image/upload/avatars/cn_04.jpg",
+  "https://res.cloudinary.com/dh3k3mbfv/image/upload/avatars/cn_05.jpg",
+  "https://res.cloudinary.com/dh3k3mbfv/image/upload/avatars/cn_06.jpg",
+  "https://res.cloudinary.com/dh3k3mbfv/image/upload/avatars/cn_07.jpg",
+  "https://res.cloudinary.com/dh3k3mbfv/image/upload/avatars/cn_08.jpg",
+  "https://res.cloudinary.com/dh3k3mbfv/image/upload/avatars/cn_09.jpg",
+  "https://res.cloudinary.com/dh3k3mbfv/image/upload/avatars/cn_10.jpg",
+  "https://res.cloudinary.com/dh3k3mbfv/image/upload/avatars/cn_11.jpg",
+  "https://res.cloudinary.com/dh3k3mbfv/image/upload/avatars/cn_12.jpg",
+  "https://res.cloudinary.com/dh3k3mbfv/image/upload/avatars/cn_13.jpg",
+  "https://res.cloudinary.com/dh3k3mbfv/image/upload/avatars/cn_14.jpg",
+  "https://res.cloudinary.com/dh3k3mbfv/image/upload/avatars/cn_15.jpg",
+  "https://res.cloudinary.com/dh3k3mbfv/image/upload/avatars/cn_16.jpg",
+  "https://res.cloudinary.com/dh3k3mbfv/image/upload/avatars/cn_17.jpg",
+  "https://res.cloudinary.com/dh3k3mbfv/image/upload/avatars/cn_18.jpg",
+  "https://res.cloudinary.com/dh3k3mbfv/image/upload/avatars/cn_19.jpg",
+  "https://res.cloudinary.com/dh3k3mbfv/image/upload/avatars/cn_20.jpg",
+  "https://res.cloudinary.com/dh3k3mbfv/image/upload/avatars/cn_21.jpg",
+  "https://res.cloudinary.com/dh3k3mbfv/image/upload/avatars/cn_22.jpg",
+  "https://res.cloudinary.com/dh3k3mbfv/image/upload/avatars/cn_23.jpg",
+  "https://res.cloudinary.com/dh3k3mbfv/image/upload/avatars/cn_24.jpg",
+  "https://res.cloudinary.com/dh3k3mbfv/image/upload/avatars/cn_25.jpg",
+  "https://res.cloudinary.com/dh3k3mbfv/image/upload/avatars/cn_26.jpg",
+  "https://res.cloudinary.com/dh3k3mbfv/image/upload/avatars/cn_27.jpg",
+  "https://res.cloudinary.com/dh3k3mbfv/image/upload/avatars/cn_28.jpg",
+  "https://res.cloudinary.com/dh3k3mbfv/image/upload/avatars/cn_29.jpg",
+  "https://res.cloudinary.com/dh3k3mbfv/image/upload/avatars/cn_30.jpg",
+  "https://res.cloudinary.com/dh3k3mbfv/image/upload/avatars/cn_31.jpg",
+  "https://res.cloudinary.com/dh3k3mbfv/image/upload/avatars/cn_32.jpg",
+  "https://res.cloudinary.com/dh3k3mbfv/image/upload/avatars/cn_33.jpg",
+  "https://res.cloudinary.com/dh3k3mbfv/image/upload/avatars/cn_34.jpg",
+  "https://res.cloudinary.com/dh3k3mbfv/image/upload/avatars/cn_35.jpg",
+  "https://res.cloudinary.com/dh3k3mbfv/image/upload/avatars/cn_36.jpg",
+  "https://res.cloudinary.com/dh3k3mbfv/image/upload/avatars/cn_37.jpg",
+  "https://res.cloudinary.com/dh3k3mbfv/image/upload/avatars/cn_38.jpg",
+  "https://res.cloudinary.com/dh3k3mbfv/image/upload/avatars/cn_39.jpg",
+  "https://res.cloudinary.com/dh3k3mbfv/image/upload/avatars/cn_40.jpg",
+  "https://res.cloudinary.com/dh3k3mbfv/image/upload/avatars/cn_41.jpg",
+  "https://res.cloudinary.com/dh3k3mbfv/image/upload/avatars/cn_42.jpg",
+  "https://res.cloudinary.com/dh3k3mbfv/image/upload/avatars/cn_43.jpg",
+  "https://res.cloudinary.com/dh3k3mbfv/image/upload/avatars/cn_44.jpg",
+  "https://res.cloudinary.com/dh3k3mbfv/image/upload/avatars/cn_45.jpg",
+  "https://res.cloudinary.com/dh3k3mbfv/image/upload/avatars/cn_46.jpg",
+  "https://res.cloudinary.com/dh3k3mbfv/image/upload/avatars/cn_47.jpg",
+  "https://res.cloudinary.com/dh3k3mbfv/image/upload/avatars/cn_48.jpg",
+  "https://res.cloudinary.com/dh3k3mbfv/image/upload/avatars/cn_49.jpg",
+  "https://res.cloudinary.com/dh3k3mbfv/image/upload/avatars/cn_50.jpg",
+  "https://res.cloudinary.com/dh3k3mbfv/image/upload/avatars/cn_51.jpg",
+  "https://res.cloudinary.com/dh3k3mbfv/image/upload/avatars/cn_52.jpg",
+  "https://res.cloudinary.com/dh3k3mbfv/image/upload/avatars/cn_53.jpg",
+  "https://res.cloudinary.com/dh3k3mbfv/image/upload/avatars/cn_54.jpg",
+  "https://res.cloudinary.com/dh3k3mbfv/image/upload/avatars/cn_55.jpg",
+  "https://res.cloudinary.com/dh3k3mbfv/image/upload/avatars/cn_56.jpg",
+  "https://res.cloudinary.com/dh3k3mbfv/image/upload/avatars/cn_57.jpg",
+  "https://res.cloudinary.com/dh3k3mbfv/image/upload/avatars/cn_58.jpg",
+  "https://res.cloudinary.com/dh3k3mbfv/image/upload/avatars/cn_59.jpg",
+  "https://res.cloudinary.com/dh3k3mbfv/image/upload/avatars/cn_60.jpg",
+  "https://res.cloudinary.com/dh3k3mbfv/image/upload/avatars/cn_61.jpg",
+  "https://res.cloudinary.com/dh3k3mbfv/image/upload/avatars/cn_62.jpg",
+  "https://res.cloudinary.com/dh3k3mbfv/image/upload/avatars/cn_63.jpg",
+  "https://res.cloudinary.com/dh3k3mbfv/image/upload/avatars/cn_64.jpg",
+  "https://res.cloudinary.com/dh3k3mbfv/image/upload/avatars/cn_65.jpg",
+  "https://res.cloudinary.com/dh3k3mbfv/image/upload/avatars/cn_66.jpg",
+  "https://res.cloudinary.com/dh3k3mbfv/image/upload/avatars/cn_67.jpg",
+  "https://res.cloudinary.com/dh3k3mbfv/image/upload/avatars/cn_68.jpg",
+  "https://res.cloudinary.com/dh3k3mbfv/image/upload/avatars/cn_69.jpg",
+  "https://res.cloudinary.com/dh3k3mbfv/image/upload/avatars/cn_70.jpg",
+  "https://res.cloudinary.com/dh3k3mbfv/image/upload/avatars/cn_71.jpg",
+  "https://res.cloudinary.com/dh3k3mbfv/image/upload/avatars/cn_72.jpg",
+  "https://res.cloudinary.com/dh3k3mbfv/image/upload/avatars/cn_73.jpg",
+  "https://res.cloudinary.com/dh3k3mbfv/image/upload/avatars/cn_74.jpg",
+  "https://res.cloudinary.com/dh3k3mbfv/image/upload/avatars/cn_75.jpg",
+  "https://res.cloudinary.com/dh3k3mbfv/image/upload/avatars/cn_76.jpg",
+  "https://res.cloudinary.com/dh3k3mbfv/image/upload/avatars/cn_77.jpg",
+  "https://res.cloudinary.com/dh3k3mbfv/image/upload/avatars/cn_78.jpg",
+  "https://res.cloudinary.com/dh3k3mbfv/image/upload/avatars/cn_79.jpg",
+  "https://res.cloudinary.com/dh3k3mbfv/image/upload/avatars/cn_80.jpg",
+  "https://res.cloudinary.com/dh3k3mbfv/image/upload/avatars/cn_81.jpg"
+];
+
+// ANIME_AVATARS 作为 DOWNLOADED_AVATARS 的别名，保持向后兼容
+const ANIME_AVATARS = DOWNLOADED_AVATARS;
 function renderWechatAvatar(name, bgColor, isRight){
     var ch = name.charAt(0);
-    var url = getAvatarUrl(name);
+    var avatarSrc = '';
+    // 优先使用自定义头像
+    if(isRight && myCustomAvatar){
+        avatarSrc = myCustomAvatar;
+    } else if(!isRight && otherCustomAvatar){
+        avatarSrc = otherCustomAvatar;
+    } else if(isRight){
+        // 我的头像：默认用第一个预设
+        avatarSrc = ANIME_AVATARS[0];
+    } else {
+        // 对方头像：根据名字hash从10个预设中选一个
+        var hash = 0;
+        for(var i = 0; i < name.length; i++) hash = ((hash << 5) - hash) + name.charCodeAt(i);
+        avatarSrc = ANIME_AVATARS[Math.abs(hash) % ANIME_AVATARS.length];
+    }
     return '<div style="width:64px;height:64px;border-radius:8px;flex-shrink:0;overflow:hidden;position:relative;">'
-        + '<img src="' + url + '" style="width:64px;height:64px;border-radius:8px;object-fit:cover;display:block;" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\';">'
+        + '<img src="' + avatarSrc + '" style="width:64px;height:64px;border-radius:8px;object-fit:cover;display:block;" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\';">'
         + '<div style="width:64px;height:64px;border-radius:8px;background:' + bgColor + ';display:none;align-items:center;justify-content:center;font-size:28px;font-weight:700;color:#fff;position:absolute;top:0;left:0;">' + ch + '</div>'
         + '</div>';
 }
 
-// 渲染微信导航栏（群聊风格）
+// 头像自定义功能
+function triggerAvatarUpload(who){
+    var input = document.getElementById(who + 'AvatarInput');
+    if(input) input.click();
+}
+
+function handleAvatarUpload(who, inputEl){
+    var file = inputEl.files && inputEl.files[0];
+    if(!file) return;
+    var reader = new FileReader();
+    reader.onload = function(e){
+        var base64 = e.target.result;
+        if(who === 'my'){
+            myCustomAvatar = base64;
+        } else {
+            otherCustomAvatar = base64;
+        }
+        updateAvatarPreview(who);
+        highlightSelectedPreset(who, -1);
+    };
+    reader.readAsDataURL(file);
+}
+
+function selectPresetAvatar(who, idx){
+    var src = ANIME_AVATARS[idx];
+    if(!src) return;
+    if(who === 'my'){
+        myCustomAvatar = src;
+    } else {
+        otherCustomAvatar = src;
+    }
+    updateAvatarPreview(who);
+    highlightSelectedPreset(who, idx);
+}
+
+function clearCustomAvatar(who){
+    if(who === 'my'){
+        myCustomAvatar = '';
+    } else {
+        otherCustomAvatar = '';
+    }
+    updateAvatarPreview(who);
+    highlightSelectedPreset(who, -1);
+}
+
+function updateAvatarPreview(who){
+    var preview = document.getElementById(who + 'AvatarPreview');
+    if(!preview) return;
+    var src = (who === 'my') ? myCustomAvatar : otherCustomAvatar;
+    if(src){
+        preview.innerHTML = '<img src="' + src + '" style="width:100%;height:100%;object-fit:cover;border-radius:6px;">';
+        preview.style.border = '2px solid #95EC69';
+    } else {
+        preview.innerHTML = '＋';
+        preview.style.border = '2px dashed rgba(255,255,255,0.3)';
+    }
+}
+
+function highlightSelectedPreset(who, selectedIdx){
+    // 更新动态头像网格的选中状态
+    updateAvatarGridSelection(who);
+}
+
+// 初始化预设头像缩略图（动态生成头像选择网格）
+var _avatarGridState = {my: {page:0}, other: {page:0}};
+var AVATAR_PAGE_SIZE = 40; // 每页显示头像数
+
+function buildAvatarGrid(who, reset){
+    var gridEl = document.getElementById(who + 'AvatarGrid');
+    if(!gridEl) return;
+    if(reset) _avatarGridState[who].page = 0;
+    var page = _avatarGridState[who].page;
+    var start = page * AVATAR_PAGE_SIZE;
+    var end = Math.min(start + AVATAR_PAGE_SIZE, ANIME_AVATARS.length);
+    if(start === 0) gridEl.innerHTML = '';
+    for(var i = start; i < end; i++){
+        var item = document.createElement('div');
+        item.className = 'avatar-grid-item';
+        item.setAttribute('data-idx', i);
+        item.setAttribute('title', '预设' + (i+1));
+        item.innerHTML = '<img src="' + ANIME_AVATARS[i] + '" loading="lazy">';
+        (function(idx, w){
+            item.onclick = function(){ selectPresetAvatar(w, idx); };
+        })(i, who);
+        gridEl.appendChild(item);
+    }
+    // 移除旧的"加载更多"按钮
+    var oldMore = gridEl.parentElement.querySelector('.avatar-load-more[data-who="'+who+'"]');
+    if(oldMore) oldMore.remove();
+    // 如果还有更多头像可加载，添加"加载更多"按钮
+    if(end < ANIME_AVATARS.length){
+        var moreBtn = document.createElement('div');
+        moreBtn.className = 'avatar-load-more';
+        moreBtn.setAttribute('data-who', who);
+        moreBtn.textContent = '更多';
+        moreBtn.onclick = function(){
+            _avatarGridState[who].page++;
+            buildAvatarGrid(who, false);
+        };
+        gridEl.parentElement.insertBefore(moreBtn, gridEl.parentElement.querySelector('[onclick*="clearCustomAvatar(\''+who+'\')"]'));
+    }
+    // 恢复选中状态
+    updateAvatarGridSelection(who);
+}
+
+function updateAvatarGridSelection(who){
+    var gridEl = document.getElementById(who + 'AvatarGrid');
+    if(!gridEl) return;
+    var items = gridEl.querySelectorAll('.avatar-grid-item');
+    var currentSrc = (who === 'my') ? myCustomAvatar : otherCustomAvatar;
+    items.forEach(function(item){
+        var idx = parseInt(item.getAttribute('data-idx'));
+        if(currentSrc && currentSrc === ANIME_AVATARS[idx]){
+            item.classList.add('selected');
+        } else {
+            item.classList.remove('selected');
+        }
+    });
+}
+
+function initAvatarThumbnails(){
+    buildAvatarGrid('my', true);
+    buildAvatarGrid('other', true);
+}
+
+// 渲染微信导航栏（一对一私聊风格）
 function renderWechatNavBar(){
-    var groupName = randPick(wechatGroupNames);
+    var displayName = leftWechatName || '好友';
     return '<div style="background:#EDEDED;padding:40px 20px 16px;display:flex;align-items:center;border-bottom:1px solid #D9D9D9;">'
         + '<span style="color:#000;font-size:28px;font-weight:300;">&#8249;</span>'
-        + '<span style="flex:1;text-align:center;font-size:28px;font-weight:500;color:#000;">' + groupName + '</span>'
+        + '<span style="flex:1;text-align:center;font-size:28px;font-weight:500;color:#000;">' + displayName + '</span>'
         + '<span style="color:#000;font-size:28px;">&#8942;</span>'
         + '</div>';
 }
 
 // 渲染微信底部输入栏
 function renderWechatInputBar(){
-    return '<div style="background:#F7F7F7;padding:12px 20px;display:flex;align-items:center;gap:12px;border-top:1px solid #D9D9D9;flex-shrink:0;">'
-        + '<span style="font-size:32px;">🎤</span>'
-        + '<div style="flex:1;background:#FFF;border-radius:8px;padding:8px 12px;font-size:22px;color:#999;">输入消息...</div>'
-        + '<span style="font-size:32px;">😊</span>'
-        + '<span style="font-size:32px;font-weight:300;">＋</span>'
+    return '<div style="background:#F7F7F7;padding:10px 16px;display:flex;align-items:center;gap:12px;border-top:1px solid #E5E5E5;flex-shrink:0;">'
+        + '<svg width="44" height="44" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10.5" stroke="#333" stroke-width="1.8"/><rect x="10.5" y="7.5" width="3" height="5" rx="1.5" fill="#333"/><path d="M8.5 13c0 2 1.6 3.5 3.5 3.5s3.5-1.5 3.5-3.5" stroke="#333" stroke-width="1.8" fill="none"/><line x1="12" y1="16.5" x2="12" y2="19" stroke="#333" stroke-width="1.8"/></svg>'
+        + '<div style="flex:1;background:#FFF;border-radius:8px;padding:8px 12px;min-height:28px;border:1px solid #E5E5E5;"></div>'
+        + '<svg width="44" height="44" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10.5" fill="#F7C948"/><circle cx="9" cy="11" r="1.5" fill="#333"/><circle cx="15" cy="11" r="1.5" fill="#333"/><path d="M8.5 14.5c1.2 2.2 6.3 2.2 7 0" stroke="#333" stroke-width="1.5" fill="none"/></svg>'
         + '</div>';
 }
 
 // 生成微信对话数据
 function generateWechatDialog(apps){
-    randomizeWechatUsers();
+    getWechatUserNames();
     var dialog = [];
     
-    // 开场时间戳
-    dialog.push({type: 'timestamp', text: generateWechatTimestamp()});
+    // timestamp removed
     
     // 我先问
     var myOpenings = [
-        '现在这些社交软件怎么样？说说你吃过的哪些',
-        '你之前不是测了那些社交App吗，咋样',
-        '兄弟，那些交友App到底哪个靠谱',
-        '最近想试试社交软件，有推荐的没',
-        '你测的那些App给说说呗',
+        '兄弟，社交软件真能得吃吗',
+        '社交软件到底能不能约出来人啊',
+        '那些交友App真的有用吗',
+        '社交软件靠谱吗给说说',
+        '你们用社交软件真约出来过吗',
     ];
     dialog.push({type: 'right', text: randPick(myOpenings), name: myWechatName, color: myWechatColor});
     
-    // 对方开始聊
-    dialog.push({type: 'timestamp', text: generateWechatTimestamp()});
+    // timestamp removed
     
     var hisOpenings = [
-        '我真金白银把市面上那些dating app玩了个遍，不整虚的，今天直接跟你说说真实的',
-        '我跟你说，花了两个月全测了一遍，有些是真不行',
-        '别提了，花了一万多测了9个App，结果差距太大了',
-        '测了两个月，结论就是选对App太重要了，不然纯浪费钱',
-        '我认真测了两个月，每个都花了钱约过人，给你说说真实体验',
+        '说实话，真金白银测了一个月，差距太大了',
+        '我跟你说，花了不少钱全测了一遍，有些真不行',
+        '别提了，花了一个月测了十几个，结论就是选对App太重要了',
+        '我认真测了一个月，每个都花了钱约过人，给你说说真实体验',
     ];
     dialog.push({type: 'left', text: randPick(hisOpenings), name: leftWechatName, color: leftWechatColor});
     
-    // 各APP介绍
-    apps.forEach(function(app, idx){
+    // 排序：is_mine的自家APP排在前面（与面第2位，识俏社第3位）
+    var sortedApps = [];
+    var mineApps = [];
+    apps.forEach(function(app){
+        if(app.is_mine) mineApps.push(app);
+        else sortedApps.push(app);
+    });
+    // 按mine_rank排序自家APP（与面排前）
+    mineApps.sort(function(a,b){return (a.mine_rank||1)-(b.mine_rank||1);});
+    if(mineApps.length >= 2 && sortedApps.length > 0){
+        sortedApps.splice(1, 0, mineApps[0]);
+        sortedApps.splice(2, 0, mineApps[1]);
+    } else if(mineApps.length >= 2){
+        sortedApps = mineApps.concat(sortedApps);
+    } else if(mineApps.length === 1){
+        if(sortedApps.length > 0) sortedApps.splice(1, 0, mineApps[0]);
+        else sortedApps.unshift(mineApps[0]);
+    }
+    
+    sortedApps.forEach(function(app, idx){
         var isMine = app.is_mine;
         
         if(isMine){
-            var myIntros = [
-                '最后说这款也很有亮点，',
-                '压轴说一下这个，',
-                '重点来了，最后这个，',
-                '最后推荐这个，体验完全不一样，',
+            var yumianIntros = [
+                '再说说'+app.name+'，这个是我测下来体验最好的',
+                '重点来了，'+app.name+'是这波里最推荐的',
+                '跟你说，'+app.name+'是唯一让我觉得值回票价的',
+                '必须提一下'+app.name+'，体验真的不一样',
             ];
-            var appText = randPick(myIntros) + '匹配了' + app.match + '个，加好友' + app.add_friend + '人，见面' + app.date + '个。花销低，多是公园闲逛不花钱，偶尔便利店小酌，总花费' + app.cost + '。见面成功率' + app.rate + '，还有女生主动请吃夜宵';
+            var appText = randPick(yumianIntros) + '，匹配了' + app.match + '个，加好友' + app.add_friend + '人，约出来' + app.date + '个，花了' + app.cost + '，得吃率' + app.rate;
             if(app.review) appText += '。' + app.review;
             if(app.story) appText += '\n' + app.story;
-            dialog.push({type: 'left-highlight', text: appText, name: leftWechatName, color: leftWechatColor, isMineApp: true});
-            
-            var myReplies = [
-                '这么牛？我去试试',
-                '这个听着不错啊',
-                '真的假的？我下载看看',
-                '那我也试试！',
-                '行，我信你一回',
-            ];
-            dialog.push({type: 'right', text: randPick(myReplies), name: myWechatName, color: myWechatColor});
+            dialog.push({type: 'left', text: appText, name: leftWechatName, color: leftWechatColor, isMineApp: true});
         } else {
             var normalIntros = [
-                '先说说' + app.name + '，',
-                '聊聊' + app.name + '，',
+                '再说说' + app.name + '，',
                 app.name + '嘛，',
-                '再说' + app.name + '，',
+                '聊下' + app.name + '，',
+                app.name + '这个，',
             ];
             var appText = randPick(normalIntros) + '匹配了' + app.match + '个，加好友' + app.add_friend + '人，约出来' + app.date + '个，花了' + app.cost;
-            if(app.rate) appText += '，得吃率才' + app.rate;
+            if(app.rate) appText += '，得吃率' + app.rate;
             if(app.review) appText += '。' + app.review;
             if(app.story) appText += '\n' + app.story;
             dialog.push({type: 'left', text: appText, name: leftWechatName, color: leftWechatColor});
-            
-            if(idx < apps.length - 2 && Math.random() > 0.5){
-                var interjections = [
-                    '这么惨？',
-                    '那还行吗？',
-                    '感觉不太行啊',
-                    '不值得啊',
-                    '这也太坑了',
-                    '下一个呢？',
-                    '继续说',
-                    '还有啥？',
-                ];
-                dialog.push({type: 'right', text: randPick(interjections), name: myWechatName, color: myWechatColor});
-            }
         }
         
-        if(idx > 0 && idx % 2 === 0 && idx < apps.length - 1){
-            dialog.push({type: 'timestamp', text: generateWechatTimestamp()});
+        if(idx > 0 && idx % 2 === 0 && idx < sortedApps.length - 1){
+            // timestamp removed
         }
     });
     
-    dialog.push({type: 'timestamp', text: generateWechatTimestamp()});
+    // timestamp removed
     
+    var myAppBestName = apps.find(function(a){return a.is_mine;}) ? apps.filter(function(a){return a.is_mine;})[0].name : '与面';
     var summaries = [
-        '所以结论就是，选对App太重要了',
-        '总结一下，别在错的平台浪费时间',
-        '反正我推荐你试试最后一个',
-        '这俩月测下来，差距太大了',
+        '所以结论就是，'+myAppBestName+'真值得试试，其他的看你自己',
+        '总结一下，选对App太重要了，'+myAppBestName+'是我最推荐的',
+        '反正你先试'+myAppBestName+'，其他的再说',
+        '测了一个月，'+myAppBestName+'是唯一让我觉得值的',
     ];
     dialog.push({type: 'left', text: randPick(summaries), name: leftWechatName, color: leftWechatColor});
     
@@ -3787,13 +5065,11 @@ let currentWechatPageIdx = 0;
 function renderWechatMessage(msg){
     var html = '';
     
-    if(msg.type === 'timestamp'){
-        html = '<div style="text-align:center;color:#999;font-size:18px;margin:12px 0 16px;">' + msg.text + '</div>';
-    }
-    else if(msg.type === 'left' || msg.type === 'left-highlight'){
-        var isHighlight = msg.type === 'left-highlight';
-        var bubbleBg = isHighlight ? '#FFF8E1' : '#FFF';
+    if(msg.type === 'left' || msg.type === 'left-highlight'){
+        var isHighlight = false;
+        var bubbleBg = '#FFF';
         var bubbleBorder = isHighlight ? 'border:1.5px solid #FF9500;' : '';
+        var bubbleShadow = 'box-shadow:0 1px 1px rgba(0,0,0,0.05);';
         var uName = msg.name || leftWechatName;
         var uColor = msg.color || leftWechatColor;
         
@@ -3802,8 +5078,7 @@ function renderWechatMessage(msg){
         html = '<div style="display:flex;gap:12px;margin-bottom:16px;align-items:flex-start;">';
         html += renderWechatAvatar(uName, uColor, false);
         html += '<div>';
-        html += '<div style="font-size:18px;color:#999;margin-bottom:4px;">' + uName + '</div>';
-        html += '<div style="background:' + bubbleBg + ';border-radius:0 16px 16px 16px;padding:14px 18px;max-width:520px;font-size:24px;line-height:1.6;color:#000;' + bubbleBorder + '">';
+        html += '<div style="background:' + bubbleBg + ';border-radius:0 16px 16px 16px;padding:14px 18px;max-width:520px;font-size:24px;line-height:1.6;color:#000;' + bubbleBorder + bubbleShadow + '">';
         html += text;
         html += '</div></div></div>';
     }
@@ -3814,7 +5089,6 @@ function renderWechatMessage(msg){
         html = '<div style="display:flex;gap:12px;margin-bottom:16px;align-items:flex-start;flex-direction:row-reverse;">';
         html += renderWechatAvatar(uName, uColor, true);
         html += '<div>';
-        html += '<div style="font-size:18px;color:#999;margin-bottom:4px;text-align:right;">' + uName + '</div>';
         html += '<div style="background:#95EC69;border-radius:16px 0 16px 16px;padding:14px 18px;max-width:520px;font-size:24px;line-height:1.6;color:#000;">';
         html += text;
         html += '</div></div></div>';
@@ -3922,6 +5196,33 @@ function renderWechatPage(pageApps, pageIndices, bgStyle, isFirst, isLast){
 }
 
 // 微信聊天模板的弹窗支持
+
+function openQQModal(idx){
+    var overlay=document.getElementById('modalOverlay');
+    var content=document.getElementById('modalContent');
+    var total=currentQQPages.length;
+    function render(idx){
+        currentQQPageIdx=idx;
+        var html=renderQQDialogPage(idx);
+        content.innerHTML=html;
+    }
+    render(idx);
+    overlay.classList.add('show');
+    overlay.onclick=function(e){
+        if(e.target===overlay){overlay.classList.remove('show');}
+    };
+    // Swipe support
+    var startX=0;
+    content.ontouchstart=function(e){startX=e.touches[0].clientX;};
+    content.ontouchend=function(e){
+        var dx=e.changedTouches[0].clientX-startX;
+        if(Math.abs(dx)>50){
+            if(dx<0&&currentQQPageIdx<total-1) render(currentQQPageIdx+1);
+            else if(dx>0&&currentQQPageIdx>0) render(currentQQPageIdx-1);
+        }
+    };
+}
+
 function openWechatModal(idx){
     currentWechatPageIdx=idx;
     var html=renderWechatDialogPage(idx);
@@ -4390,26 +5691,12 @@ function openXiaohongshuModal(idx){
 
 
 // ============ 朋友圈长文模板 ============
-// 真实头像URL数组（男女各5个，随机选用）
-const AVATAR_BASE_URL = 'https://13800138000.pythonanywhere.com/static/avatars/';
-const AVATAR_URLS = [
-    AVATAR_BASE_URL + 'avatar_1.jpg',
-    AVATAR_BASE_URL + 'avatar_2.jpg',
-    AVATAR_BASE_URL + 'avatar_3.jpg',
-    AVATAR_BASE_URL + 'avatar_4.jpg',
-    AVATAR_BASE_URL + 'avatar_5.jpg',
-    AVATAR_BASE_URL + 'avatar_6.jpg',
-    AVATAR_BASE_URL + 'avatar_7.jpg',
-    AVATAR_BASE_URL + 'avatar_8.jpg',
-    AVATAR_BASE_URL + 'avatar_9.jpg',
-    AVATAR_BASE_URL + 'avatar_10.jpg',
-];
-// 为每个用户名分配固定的头像URL，保证同一人头像一致
-const _avatarMap = {};
+// 真实头像URL数组 - 复用ANIME_AVATARS（包含210个头像）
+// 朋友圈功能使用ANIME_AVATARS，保证头像一致
 function getAvatarUrl(name){
     if(!_avatarMap[name]){
-        var idx = Object.keys(_avatarMap).length % AVATAR_URLS.length;
-        _avatarMap[name] = AVATAR_URLS[idx];
+        var idx = Object.keys(_avatarMap).length % ANIME_AVATARS.length;
+        _avatarMap[name] = ANIME_AVATARS[idx];
     }
     return _avatarMap[name];
 }
@@ -4510,7 +5797,7 @@ function renderMomentsCommentSection(){
     var C = MOMENTS_COLORS;
     var commentPool = [
         {name: randPick(wechatUserNames), text: '哪个好用？'},
-        {name: randPick(wechatUserNames), text: randPick(['与面真的行吗？','这个靠谱吗？','真的假的？','有那么好？','试过吗？'])},
+        {name: randPick(wechatUserNames), text: randPick(['与面真的行吗？','识俏社靠谱吗？','这个靠谱吗？','真的假的？','有那么好？','试过吗？'])},
         {name: randPick(wechatUserNames), text: randPick(['感谢分享！','收藏了','马克一下','太有用了','学习了'])},
         {name: randPick(wechatUserNames), text: randPick(['我试试','我也想测','下次试一下','值得试试'])},
         {name: randPick(wechatUserNames), text: randPick(['确实差距大','踩过坑','深有体会','说得太对了'])},
@@ -5476,8 +6763,8 @@ function renderRatingTablePage(pageIdx){
     // Table header
     html += renderRatingTableHeader();
     
-    // Table rows - mine first, then others
-    var sortedApps = [].concat(currentData.filter(function(a){return a.is_mine;}), currentData.filter(function(a){return !a.is_mine;}));
+    // Table rows - mine apps first (sorted by mine_rank), then others
+    var _mine=currentData.filter(function(a){return a.is_mine;});var _others=currentData.filter(function(a){return !a.is_mine;});_mine.sort(function(a,b){return (a.mine_rank||1)-(b.mine_rank||1);});var sortedApps=[];if(_others.length>0){sortedApps.push(_others[0]);for(var _mi=0;_mi<_mine.length;_mi++)sortedApps.push(_mine[_mi]);for(var _i=1;_i<_others.length;_i++)sortedApps.push(_others[_i]);}else{sortedApps=_mine.concat(_others);}
     sortedApps.forEach(function(app, idx){
         html += renderRatingTableRow(app, idx);
     });
@@ -5679,5 +6966,15 @@ function openCategoryCardModal(idx){
 }
 
 </script>
+<script>
+// 页面加载后初始化头像缩略图
+if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', initAvatarThumbnails);
+} else {
+    initAvatarThumbnails();
+}
+</script>
+
+<button class="floating-gen-btn" onclick="generate()" id="floatingGenBtn">🔄 生成</button>
 </body>
 </html>
